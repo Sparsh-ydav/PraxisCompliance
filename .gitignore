@@ -179,6 +179,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+
+.claude
+AGENTS.MD
+CLAUDE.MD
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
