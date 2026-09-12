@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf8;
+  --foreground: #334155;
+  --blocking: #dc2626;
+  --blocking-bg: #fee2e2;
+  --blocking-border: #fecaca;
+  --advisory: #d97706;
+  --advisory-bg: #fef3c7;
+  --advisory-border: #fde68a;
+  --success: #059669;
+  --success-bg: #d1fae5;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --muted: #64748b;
+  --municipal-blue: #1e3a5f;
+  --paper-white: #fafaf8;
+  --signature-ink: #2563eb;
+  --slate-text: #334155;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-blocking: var(--blocking);
+  --color-blocking-bg: var(--blocking-bg);
+  --color-blocking-border: var(--blocking-border);
+  --color-advisory: var(--advisory);
+  --color-advisory-bg: var(--advisory-bg);
+  --color-advisory-border: var(--advisory-border);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-muted: var(--muted);
+  --color-municipal-blue: var(--municipal-blue);
+  --color-paper-white: var(--paper-white);
+  --color-signature-ink: var(--signature-ink);
+  --color-slate-text: var(--slate-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
