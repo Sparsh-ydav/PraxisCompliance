@@ -10,9 +10,13 @@ export const ComplianceFindingSchema = z.object({
   detail: z.string().min(1),
   clauseId: z.string(),
   clauseCitation: z.string(),
+  evidence: z.string().optional(),
   severity: z.enum(["blocking", "advisory"]),
   source: z.enum(["written_code", "learned_pattern"]),
   confidence: z.number().min(0).max(1),
+  isRippleEffect: z.boolean().optional(),
+  rippleLabel: z.string().optional(),
+  resolved: z.boolean().optional(),
 });
 
 export type ComplianceFinding = z.infer<typeof ComplianceFindingSchema>;

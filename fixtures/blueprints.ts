@@ -12,6 +12,9 @@ export interface Room {
 }
 
 export interface EgressOpening {
+  id?: string;
+  room?: string;
+  wall?: string;
   type: "window" | "door";
   clearWidthInches: number;
   clearHeightInches: number;
@@ -70,6 +73,9 @@ export const BLUEPRINT_CLEAN: Blueprint = {
       floorLevel: "ground",
       egressOpenings: [
         {
+          id: "W1",
+          room: "Addition Bedroom",
+          wall: "north",
           type: "window",
           clearWidthInches: 24,
           clearHeightInches: 26,
@@ -120,6 +126,9 @@ export const BLUEPRINT_BLOCKING: Blueprint = {
       floorLevel: "basement",
       egressOpenings: [
         {
+          id: "W2",
+          room: "basement bedroom",
+          wall: "south",
           type: "window",
           clearWidthInches: 16, // VIOLATION: minimum is 20 inches
           clearHeightInches: 22, // VIOLATION: minimum is 24 inches

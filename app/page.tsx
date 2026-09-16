@@ -73,8 +73,8 @@ export default function LandingPage() {
               Stop writing the same correction letter twice.
             </h1>
             <p className="text-xl text-slate-600 mb-12 max-w-xl leading-relaxed">
-              PraxisCompliance learns from your municipality&apos;s historical correction letters to catch
-              common issues before applicants submit. Fewer revisions, faster approvals.
+              PraxisCompliance is informed by historical correction letters and jurisdiction-specific review patterns to catch
+              common issues before applicants submit. Fewer revisions, higher approval readiness.
             </p>
 
             {/* CTA buttons */}
@@ -133,9 +133,9 @@ export default function LandingPage() {
               <p>1. Applicant uploads plans</p>
               <p>2. PraxisCompliance flags egress violation instantly</p>
               <p>3. Applicant fixes before submitting</p>
-              <p>4. Reviewer approves clean application</p>
+              <p>4. Human reviewer verifies and signs off on compliant submission</p>
               <p className="text-success font-semibold pt-2">
-                Total: Submit once, approve faster
+                Total: Submit with high readiness, accelerate municipal review
               </p>
             </div>
           </div>
@@ -177,8 +177,8 @@ export default function LandingPage() {
           <div>
             <h2 className="text-2xl font-bold text-municipal-blue mb-4">For Reviewers</h2>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Batch queue sorted by severity. AI-drafted correction letters ready for your
-              approval. Spend your time on judgment calls, not writing boilerplate.
+              Batch queue sorted by severity. AI-drafted notices ready for reviewer determination and
+              sign-off. Spend your time on judgment calls, not writing boilerplate.
             </p>
             <ul className="space-y-3 text-sm text-slate-600 mb-6">
               <li className="flex gap-2">
@@ -210,11 +210,11 @@ export default function LandingPage() {
         <div className="space-y-8 max-w-2xl">
           <div>
             <h3 className="text-xl font-semibold text-municipal-blue mb-2">
-              Learn from historical corrections
+              Informed by historical correction patterns
             </h3>
             <p className="text-slate-600 leading-relaxed">
-              PraxisCompliance analyzes your municipality&apos;s past correction letters to identify
-              patterns: which violations reviewers always flag, which get waived, and how
+              PraxisCompliance is informed by your municipality&apos;s historical review patterns to identify
+              which violations reviewers always flag, which get waived, and how
               strictly local practice enforces written code.
             </p>
           </div>
@@ -232,11 +232,12 @@ export default function LandingPage() {
 
           <div>
             <h3 className="text-xl font-semibold text-municipal-blue mb-2">
-              Human reviewer always approves
+              Human reviewers retain final determination
             </h3>
             <p className="text-slate-600 leading-relaxed">
-              AI drafts, humans decide. Reviewers see pre-written correction letters they
-              can approve as-is, edit, or reject. No application is approved by AI alone.
+              AI drafts, humans decide. Reviewers see pre-written correction notices they
+              can sign off as-is, edit, or reject. The system provides readiness assessments —
+              no permit application is approved by AI.
             </p>
           </div>
         </div>

@@ -74,19 +74,19 @@ Project Type: ${application.projectType}
 Submitted: ${application.submittedDate}
 
 ## Compliance Findings (${application.findings.length} items)
-${findingsText || "No issues found - this is an approval letter."}
+${findingsText || "No issues found - this application complies with all requirements. Prepare a compliance determination and permit authorization notice for reviewer sign-off."}
 
 ## Instructions
-Generate a formal correction letter that:
+Generate a formal notice for municipal plans examination that:
 1. Uses official letterhead format with "MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT" header
 2. Includes case number, applicant name, address, and date
 3. Has a formal salutation
-4. Lists each correction item with its section reference
+4. Lists each correction item with its section reference (if corrections needed)
 5. Uses bureaucratic but clear language
-6. Ends with resubmission instructions (if corrections needed) or approval notice (if clean)
+6. Ends with resubmission instructions (if corrections needed) or examiner compliance determination and permit authorization notice (if clean)
 7. Signs off with "Sincerely, [Plan Reviewer Name], [Title]"
 
-If there are NO findings, this should be an APPROVAL NOTICE, not a correction letter.
+If there are NO findings, this should be a COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE for human reviewer sign-off, not a correction letter.
 
 Return ONLY valid JSON matching this exact schema:
 {
@@ -106,7 +106,7 @@ function generateGenericFallbackLetter(application: ReturnType<typeof getApplica
   if (!hasFindings) {
     return `MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT
 
-APPROVAL NOTICE
+COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE
 
 Permit Application No.: ${application.caseNumber}
 Project Address: ${application.projectAddress}
@@ -115,9 +115,9 @@ Date: September 12, 2026
 
 Dear ${application.applicantName.split(" ")[0]},
 
-Your ${application.projectType} application has been reviewed and found to be in full compliance with all applicable codes and regulations. No corrections are required.
+Your ${application.projectType} application has been reviewed by department plans examiners and verified to be in full compliance with all applicable codes and regulations. No corrections are required.
 
-Your permit is approved and will be issued upon payment of applicable fees.
+Following human plans examiner verification, your permit application is approved for issuance upon payment of applicable fees.
 
 Sincerely,
 Building Official

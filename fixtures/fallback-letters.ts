@@ -152,7 +152,7 @@ T. Reardon, Plans Examiner`,
 
   "qa-007": `MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT
 
-APPROVAL NOTICE
+COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE
 
 Permit Application No.: BPR-2026-0438
 Project Address: 234 Pine Street
@@ -161,15 +161,15 @@ Date: September 12, 2026
 
 Dear Ms. Anderson,
 
-Your master bedroom addition application has been reviewed and found to be in full compliance with all applicable codes and regulations. No corrections are required.
+Your master bedroom addition application has been reviewed by department plans examiners and determined to be in full compliance with applicable codes and regulations. No corrections are required.
 
-Your permit is approved and will be issued upon payment of applicable fees.
+Following human reviewer verification, your permit is approved for issuance upon payment of applicable fees.
 
 H. Kowalski, CBO`,
 
   "qa-008": `MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT
 
-APPROVAL NOTICE
+COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE
 
 Permit Application No.: BPR-2026-0442
 Project Address: 956 Chestnut Boulevard
@@ -178,13 +178,13 @@ Date: September 12, 2026
 
 Dear Mr. Wilson,
 
-Your rear addition application is in full compliance. No corrections required. Permit approved pending fee payment.
+Your rear addition application has been reviewed and verified in full compliance. No corrections required. Following examiner review, permit is approved for issuance pending fee payment.
 
 M. Okonkwo, Plans Examiner`,
 
   "qa-009": `MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT
 
-APPROVAL NOTICE
+COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE
 
 Permit Application No.: BPR-2026-0445
 Project Address: 1842 Ferndale Drive
@@ -193,7 +193,7 @@ Date: September 12, 2026
 
 Dear Ms. Rodriguez,
 
-Your home office addition has been reviewed and approved. All requirements met. Permit ready for issuance.
+Your home office addition has been reviewed and verified by plans examination staff. All requirements are met. The permit is approved for issuance by the undersigned reviewer.
 
 T. Reardon, Plans Examiner`,
 };

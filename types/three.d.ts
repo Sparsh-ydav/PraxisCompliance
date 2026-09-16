@@ -19,6 +19,7 @@ declare module "three" {
     domElement: HTMLCanvasElement;
     setSize(w: number, h: number): void;
     setPixelRatio(r: number): void;
+    setClearColor(color: any, alpha?: number): void;
     toneMapping: number;
     toneMappingExposure: number;
     render(scene: any, camera: any): void;
@@ -31,7 +32,9 @@ declare module "three" {
     material: any;
     position: any;
     rotation: any;
+    scale: any;
     userData: any;
+    add(...objs: any[]): void;
     dispose?(): void;
   }
   export class Points {
@@ -41,6 +44,10 @@ declare module "three" {
   }
   export class SphereGeometry {
     constructor(radius: number, w: number, h: number);
+    dispose(): void;
+  }
+  export class IcosahedronGeometry {
+    constructor(radius?: number, detail?: number);
     dispose(): void;
   }
   export class TorusGeometry {
@@ -87,6 +94,25 @@ declare module "three" {
   export class CanvasTexture {
     constructor(canvas: HTMLCanvasElement);
     dispose(): void;
+  }
+  export class Euler {
+    constructor(x?: number, y?: number, z?: number, order?: string);
+    x: number;
+    y: number;
+    z: number;
+    set(x: number, y: number, z: number, order?: string): this;
+  }
+  export class Raycaster {
+    constructor(origin?: any, direction?: any, near?: number, far?: number);
+    setFromCamera(coords: any, camera: any): void;
+    intersectObject(object: any, recursive?: boolean): any[];
+    intersectObjects(objects: any[], recursive?: boolean): any[];
+  }
+  export class Vector2 {
+    constructor(x?: number, y?: number);
+    x: number;
+    y: number;
+    set(x: number, y: number): this;
   }
   export class Object3D {}
   export class Material { dispose(): void; }

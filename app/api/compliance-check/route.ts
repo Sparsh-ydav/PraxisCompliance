@@ -83,8 +83,9 @@ ${patternText}
 1. Check every regulation clause against the blueprint data.
 2. Also apply the learned reviewer patterns — if a pattern indicates reviewers flag something, include it as a finding with source "learned_pattern".
 3. For each finding, assign severity: "blocking" (must fix before permit) or "advisory" (should address, may be waived).
-4. Always include the governance note: "X issues detected in automated check against N clauses — human reviewer sign-off required before permit issuance."
-5. If no issues are found, return an empty findings array and note: "No issues detected in automated check against N clauses — human reviewer sign-off required before permit issuance."
+4. For each finding, cite the specific parsed blueprint element in "evidence" (e.g. "Window W2, basement bedroom (south wall) — parsed net clear opening: 16\" × 22\"").
+5. Always include the governance note: "X issues detected in automated check against N clauses — human reviewer sign-off required before permit issuance."
+6. If no issues are found, return an empty findings array and note: "No issues detected in automated check against N clauses — human reviewer sign-off required before permit issuance."
 
 ## Required JSON Schema
 {
@@ -97,6 +98,7 @@ ${patternText}
       "detail": "<detailed explanation including specific dimensions/values>",
       "clauseId": "<regulation clause ID like FE-102>",
       "clauseCitation": "<section and title>",
+      "evidence": "<specific parsed blueprint element, e.g. Window W2, basement bedroom (south wall) — parsed: 16\" x 22\">",
       "severity": "blocking" | "advisory",
       "source": "written_code" | "learned_pattern",
       "confidence": <0.0 to 1.0>

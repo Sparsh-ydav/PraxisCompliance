@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { QueuedApplication, ApplicationStatus } from "@/fixtures/reviewer-queue";
 import { QUEUED_APPLICATIONS, sortBySeverity } from "@/fixtures/reviewer-queue";
 import FindingCard from "@/app/components/FindingCard";
+import ApprovalReadinessGauge, { calculateReadinessScore } from "@/app/components/ApprovalReadinessGauge";
 
 export default function ReviewerDashboard() {
   const [applications, setApplications] = useState<QueuedApplication[]>(sortBySeverity(QUEUED_APPLICATIONS));
@@ -58,7 +59,7 @@ export default function ReviewerDashboard() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Reviewer Dashboard</h1>
         <div className="text-sm bg-slate-100 px-4 py-2 rounded">
-          <span className="font-semibold">Session Stats:</span> {approvedAsIs} approved as-is, {editedBeforeApproval} edited before approval, {rejected} rejected
+          <span className="font-semibold">Session Stats:</span> {approvedAsIs} signed off as-is, {editedBeforeApproval} edited before sign-off, {rejected} rejected
         </div>
       </div>
 
@@ -122,6 +123,13 @@ export default function ReviewerDashboard() {
               {selectedApp.projectAddress} • Case #{selectedApp.caseNumber}
             </p>
 
+            {/* Approval Readiness Score Gauge */}
+            <ApprovalReadinessGauge
+              score={calculateReadinessScore(selectedApp.blockingCount, selectedApp.advisoryCount)}
+              blockingCount={selectedApp.blockingCount}
+              advisoryCount={selectedApp.advisoryCount}
+            />
+
             <h3 className="font-semibold text-lg mb-3">Findings ({selectedApp.findings.length})</h3>
             {selectedApp.findings.length > 0 ? (
               <div className="space-y-3 mb-6">
@@ -153,13 +161,13 @@ export default function ReviewerDashboard() {
                 <>
                   <button
                     onClick={() => updateStatus(selectedApp.id, "approved", false)}
-                    className="px-6 py-2 bg-success text-white rounded font-bold hover:bg-green-700"
+                    className="px-6 py-2 bg-success text-white rounded font-bold hover:bg-green-700 cursor-pointer"
                   >
-                    Approve & Send
+                    Sign Off &amp; Issue
                   </button>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-accent text-white rounded font-bold hover:bg-blue-700"
+                    className="px-6 py-2 bg-accent text-white rounded font-bold hover:bg-blue-700 cursor-pointer"
                   >
                     Edit
                   </button>
@@ -169,7 +177,7 @@ export default function ReviewerDashboard() {
                         updateStatus(selectedApp.id, "rejected");
                       }
                     }}
-                    className="px-6 py-2 bg-blocking text-white rounded font-bold hover:bg-rose-700"
+                    className="px-6 py-2 bg-blocking text-white rounded font-bold hover:bg-rose-700 cursor-pointer"
                   >
                     Reject
                   </button>
@@ -181,13 +189,13 @@ export default function ReviewerDashboard() {
                       setIsEditing(false);
                       updateStatus(selectedApp.id, "approved", true);
                     }}
-                    className="px-6 py-2 bg-success text-white rounded font-bold hover:bg-green-700"
+                    className="px-6 py-2 bg-success text-white rounded font-bold hover:bg-green-700 cursor-pointer"
                   >
-                    Approve Edited Letter
+                    Sign Off Edited Letter
                   </button>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="px-6 py-2 bg-slate-400 text-white rounded font-bold hover:bg-slate-500"
+                    className="px-6 py-2 bg-slate-400 text-white rounded font-bold hover:bg-slate-500 cursor-pointer"
                   >
                     Cancel Edit
                   </button>

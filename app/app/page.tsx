@@ -7,7 +7,10 @@ import type { Blueprint } from "@/fixtures/blueprints";
 import { BLUEPRINTS } from "@/fixtures/blueprints";
 import FindingCard from "@/app/components/FindingCard";
 import ReviewerDashboard from "@/app/components/ReviewerDashboard";
-import type { ComplianceResult } from "@/lib/schemas";
+import ApprovalReadinessGauge, { calculateReadinessScore } from "@/app/components/ApprovalReadinessGauge";
+import FloorPlanDiagram from "@/app/components/FloorPlanDiagram";
+import { rippleEffectSource } from "@/lib/ripple-effect";
+import type { ComplianceFinding, ComplianceResult } from "@/lib/schemas";
 
 type Tab = "applicant" | "reviewer";
 
@@ -43,6 +46,14 @@ function AppContent() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [classificationResponse, setClassificationResponse] = useState<ClassificationResponse | null>(null);
   const [classifying, setClassifying] = useState(false);
+
+  // Ripple effect simulation state
+  const [isRechecking, setIsRechecking] = useState(false);
+  const [hasAppliedRipple, setHasAppliedRipple] = useState(false);
+  const [initialFindings, setInitialFindings] = useState<ComplianceFinding[] | null>(null);
+  const [currentScore, setCurrentScore] = useState<number | null>(null);
+  const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [scoreStatusNote, setScoreStatusNote] = useState<string | null>(null);
 
   // Check auth state and sync tab with URL param
   useEffect(() => {
@@ -157,7 +168,65 @@ function AppContent() {
 
     const data = await res.json();
     setResult(data);
+    setInitialFindings(data.findings || []);
+    setHasAppliedRipple(false);
+    setIsRechecking(false);
+    setPreviousScore(null);
+    setScoreStatusNote(null);
+    const blockingCount = (data.findings || []).filter((f: ComplianceFinding) => f.severity === "blocking").length;
+    const advisoryCount = (data.findings || []).filter((f: ComplianceFinding) => f.severity === "advisory").length;
+    setCurrentScore(calculateReadinessScore(blockingCount, advisoryCount));
     setLoading(false);
+  }
+
+  // Ripple effect simulation handler: calls swappable RippleEffectSource provider abstraction
+  async function handleMoveWindowEast() {
+    if (!result) return;
+    setIsRechecking(true);
+
+    try {
+      // Calls the swappable provider abstraction (RippleEffectSource)
+      const rippleRes = await rippleEffectSource.runMoveWindowEast(result.blueprintId, 300);
+
+      // Update findings: mark resolved findings, append newly surfaced findings
+      const updatedFindings = result.findings.map((f) =>
+        rippleRes.resolvedFindingIds.includes(f.id)
+          ? { ...f, resolved: true }
+          : f
+      );
+
+      const allFindings = [...updatedFindings, ...rippleRes.newFindings];
+
+      setResult({
+        ...result,
+        findings: allFindings,
+      });
+
+      setPreviousScore(currentScore);
+      setCurrentScore(rippleRes.updatedReadinessScore);
+      setHasAppliedRipple(true);
+      setScoreStatusNote("Simulation applied: 2 egress issues resolved, 1 setback conflict surfaced by recheck");
+    } catch (err) {
+      console.error("Ripple effect recheck failed:", err);
+      alert("Error running ripple effect recheck");
+    } finally {
+      setIsRechecking(false);
+    }
+  }
+
+  function handleResetRipple() {
+    if (!result || !initialFindings) return;
+    setResult({
+      ...result,
+      findings: initialFindings,
+    });
+    setHasAppliedRipple(false);
+    setIsRechecking(false);
+    setPreviousScore(null);
+    setScoreStatusNote(null);
+    const blockingCount = initialFindings.filter((f) => f.severity === "blocking").length;
+    const advisoryCount = initialFindings.filter((f) => f.severity === "advisory").length;
+    setCurrentScore(calculateReadinessScore(blockingCount, advisoryCount));
   }
 
   // Determine if compliance check can proceed
@@ -423,8 +492,107 @@ function AppContent() {
           </section>
 
           {result && (
-            <section>
-              <h2 className="text-2xl font-bold mb-4">Findings</h2>
+            <section className="mt-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Findings &amp; Readiness</h2>
+                {hasAppliedRipple && (
+                  <span className="text-xs bg-amber-100 text-amber-900 border border-amber-300 font-semibold px-2.5 py-1 rounded-full">
+                    ⚡ Plan Modification Applied
+                  </span>
+                )}
+              </div>
+
+              {/* Approval Readiness Score Gauge */}
+              {(() => {
+                const unresolvedBlocking = result.findings.filter((f) => f.severity === "blocking" && !f.resolved).length;
+                const unresolvedAdvisory = result.findings.filter((f) => f.severity === "advisory" && !f.resolved).length;
+                const activeScore = currentScore ?? calculateReadinessScore(unresolvedBlocking, unresolvedAdvisory);
+
+                return (
+                  <ApprovalReadinessGauge
+                    score={activeScore}
+                    blockingCount={unresolvedBlocking}
+                    advisoryCount={unresolvedAdvisory}
+                    previousScore={previousScore}
+                    statusNote={scoreStatusNote}
+                  />
+                );
+              })()}
+
+              {/* Ripple Effect Demo Action Card (Basement Bedroom Conversion) */}
+              {result.blueprintId === "bp-blocking" && (
+                <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">⚡</span>
+                    <h3 className="font-bold text-slate-900">
+                      The Ripple Effect Demo — Iterative Plan Modification
+                    </h3>
+                  </div>
+                  <p className="mb-4 text-xs text-slate-600 max-w-xl">
+                    Simulate modifying blueprint dimensions to resolve the undersized egress window.
+                    Moving Window W2 clears egress opening constraints, but tests proximity to the east side lot boundary.
+                  </p>
+
+                  {/* 2D Floor Plan Diagram */}
+                  <div className="mb-4">
+                    <FloorPlanDiagram
+                      isMoved={hasAppliedRipple}
+                      isRechecking={isRechecking}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {!hasAppliedRipple ? (
+                      <button
+                        id="move-window-btn"
+                        onClick={handleMoveWindowEast}
+                        disabled={isRechecking}
+                        className="px-4 py-2.5 bg-accent text-white rounded font-bold text-sm hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed shadow transition-colors flex items-center gap-2 cursor-pointer"
+                      >
+                        {isRechecking ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-1 h-4 w-4 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Rechecking affected requirements…
+                          </>
+                        ) : (
+                          "Move window 300mm east"
+                        )}
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1.5 text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">
+                          ✓ Window Moved +300mm East
+                        </span>
+                        <button
+                          onClick={handleResetRipple}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors cursor-pointer"
+                        >
+                          Reset Plan
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="mb-4 p-4 bg-slate-100 rounded text-sm italic">
                 {result.governanceNote}
