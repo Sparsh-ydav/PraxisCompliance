@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #fafaf8;
-  --foreground: #334155;
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
   --blocking: #dc2626;
   --blocking-bg: #fee2e2;
   --blocking-border: #fecaca;
@@ -15,14 +19,38 @@
   --accent-light: #dbeafe;
   --muted: #64748b;
   --municipal-blue: #1e3a5f;
-  --paper-white: #fafaf8;
+  --paper-white: #f8fafc;
   --signature-ink: #2563eb;
   --slate-text: #334155;
+}
+
+.dark {
+  --background: #090d16;
+  --foreground: #f1f5f9;
+  --card: #0f172a;
+  --card-border: #1e293b;
+  --blocking: #ef4444;
+  --blocking-bg: #450a0a;
+  --blocking-border: #7f1d1d;
+  --advisory: #f59e0b;
+  --advisory-bg: #451a03;
+  --advisory-border: #78350f;
+  --success: #10b981;
+  --success-bg: #064e3b;
+  --accent: #3b82f6;
+  --accent-light: #1e293b;
+  --muted: #94a3b8;
+  --municipal-blue: #93c5fd;
+  --paper-white: #0f172a;
+  --signature-ink: #60a5fa;
+  --slate-text: #cbd5e1;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-border: var(--card-border);
   --color-blocking: var(--blocking);
   --color-blocking-bg: var(--blocking-bg);
   --color-blocking-border: var(--blocking-border);
@@ -38,11 +66,32 @@
   --color-paper-white: var(--paper-white);
   --color-signature-ink: var(--signature-ink);
   --color-slate-text: var(--slate-text);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
 body {
+  font-family: var(--font-sans);
   background: var(--background);
   color: var(--foreground);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Custom scrollbar in dark mode */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }

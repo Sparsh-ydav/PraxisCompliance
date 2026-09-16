@@ -12,6 +12,7 @@ import BlueprintViewer from "@/app/components/BlueprintViewer";
 import EvidenceChain from "@/app/components/EvidenceChain";
 import JurisdictionMemoryPanel from "@/app/components/JurisdictionMemoryPanel";
 import RegulationConflictCard from "@/app/components/RegulationConflictCard";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import { detectRegulationConflicts } from "@/lib/conflict-detector";
 import { logAuditEvent } from "@/lib/audit-trail";
 import { rippleEffectSource, type RippleEffectResult } from "@/lib/ripple-effect";
@@ -283,23 +284,23 @@ function AppContent() {
   const conflicts = detectRegulationConflicts(activeBlueprint || undefined);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Top Navigation */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="font-bold text-xl tracking-tight text-municipal-blue flex items-center gap-2">
+            <Link href="/" className="font-bold text-xl tracking-tight text-municipal-blue dark:text-blue-400 flex items-center gap-2">
               <span className="w-4 h-4 bg-accent rounded-sm inline-block" />
               PraxisCompliance
             </Link>
 
-            <nav className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+            <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
               <button
                 onClick={() => handleTabChange("applicant")}
                 className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === "applicant"
-                    ? "bg-white text-municipal-blue shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-slate-700 text-municipal-blue dark:text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 Applicant Check
@@ -308,8 +309,8 @@ function AppContent() {
                 onClick={() => handleTabChange("reviewer")}
                 className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === "reviewer"
-                    ? "bg-white text-municipal-blue shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-slate-700 text-municipal-blue dark:text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                 }`}
               >
                 <span>Reviewer Dashboard</span>
@@ -319,19 +320,22 @@ function AppContent() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Dark / Light Mode Switch */}
+            <ThemeToggle />
+
             <button
               onClick={() => setShowJurisdictionMemory(!showJurisdictionMemory)}
-              className="px-2.5 py-1.5 text-xs font-medium rounded border border-purple-200 text-purple-800 bg-purple-50 hover:bg-purple-100 transition-colors flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <span>🏛️</span>
-              <span>Jurisdiction Memory</span>
+              <span className="hidden sm:inline">Jurisdiction Memory</span>
             </button>
 
             {isLoggedIn ? (
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-full hover:bg-slate-100 cursor-pointer"
+                  className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer shadow-xs"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
                   <span className="max-w-[140px] truncate">{userEmail}</span>
@@ -339,13 +343,13 @@ function AppContent() {
                 </button>
 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
-                    <div className="px-3 py-2 border-b border-slate-100 text-xs text-slate-500">
-                      Signed in as <span className="font-semibold text-slate-800 block truncate">{userEmail}</span>
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50">
+                    <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+                      Signed in as <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate">{userEmail}</span>
                     </div>
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 font-medium cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-medium cursor-pointer"
                     >
                       Sign Out
                     </button>
@@ -355,7 +359,7 @@ function AppContent() {
             ) : (
               <button
                 onClick={() => router.push(`/login?redirect=${encodeURIComponent("/app?tab=reviewer")}`)}
-                className="text-xs font-semibold bg-municipal-blue text-white px-3 py-1.5 rounded hover:bg-blue-900 transition-colors cursor-pointer"
+                className="text-xs font-semibold bg-municipal-blue dark:bg-blue-600 text-white px-3.5 py-1.5 rounded-lg hover:bg-blue-900 dark:hover:bg-blue-500 transition-colors cursor-pointer shadow-xs"
               >
                 Sign In
               </button>
@@ -371,7 +375,7 @@ function AppContent() {
             <JurisdictionMemoryPanel />
             <button
               onClick={() => setShowJurisdictionMemory(false)}
-              className="absolute top-7 right-7 text-xs text-slate-400 hover:text-slate-700 cursor-pointer font-bold"
+              className="absolute top-7 right-7 text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer font-bold bg-white dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700"
             >
               ✕ Close
             </button>
@@ -382,16 +386,16 @@ function AppContent() {
       {/* Main Tab Routing */}
       {activeTab === "applicant" ? (
         <div className="p-4 md:p-8 max-w-6xl mx-auto">
-          <section className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+          <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 transition-colors">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
               Applicant Compliance Pre-Check
             </h1>
-            <p className="text-sm text-slate-600 mb-6">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
               Upload an architectural blueprint to verify compliance against Maplewood Township building and zoning codes before permit submission.
             </p>
 
             {/* File Upload Zone */}
-            <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-slate-400 transition-colors bg-slate-50/50">
+            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-colors bg-slate-50/50 dark:bg-slate-850/40">
               <input
                 type="file"
                 accept=".pdf,image/png,image/jpeg,image/webp"
@@ -401,26 +405,26 @@ function AppContent() {
               />
               <label htmlFor="blueprint-upload" className="cursor-pointer block">
                 <div className="text-3xl mb-2">📁</div>
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                   Click to upload blueprint (PDF, PNG, JPG)
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Synthetic test files recognized: clean-addition.pdf, basement-bedroom.pdf, setback-kitchen.pdf
                 </p>
               </label>
 
               {uploadedFile && (
-                <div className="mt-4 p-3 bg-white rounded border border-slate-200 text-xs inline-flex items-center gap-2">
+                <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs inline-flex items-center gap-2 font-mono">
                   <span>📄 {uploadedFile.name}</span>
-                  <span className="text-slate-400">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
+                  <span className="text-slate-400 dark:text-slate-500">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
                 </div>
               )}
             </div>
 
             {/* Classification Response Card */}
             {classifying && (
-              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none">
+              <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
@@ -429,22 +433,22 @@ function AppContent() {
             )}
 
             {classificationResponse && (
-              <div className="mt-4 p-4 bg-blue-50/70 border border-blue-200 rounded-lg text-xs">
-                <div className="font-bold text-blue-950 mb-1 flex items-center justify-between">
+              <div className="mt-4 p-4 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg text-xs">
+                <div className="font-bold text-blue-950 dark:text-blue-200 mb-1 flex items-center justify-between">
                   <span>Classification: {classificationResponse.classification?.projectType || "Standard Residential Plan"}</span>
-                  <span className="font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10.5px]">
+                  <span className="font-mono bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded text-[10.5px]">
                     {((classificationResponse.classification?.confidence || 0.95) * 100).toFixed(0)}% Match
                   </span>
                 </div>
-                <p className="text-blue-900/80">
+                <p className="text-blue-900/80 dark:text-blue-300/80">
                   Detected Rooms: {classificationResponse.classification?.detectedRooms.join(", ") || "Basement Recreation / Sleeping Room"} • Scope: {classificationResponse.classification?.scope || "renovation"}
                 </p>
               </div>
             )}
 
             {/* Example Selector */}
-            <div className="mt-6 border-t border-slate-100 pt-4">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 font-mono">
                 Or choose an example test blueprint
               </label>
               <select
@@ -456,7 +460,7 @@ function AppContent() {
                   setFilePreview(null);
                   setClassificationResponse(null);
                 }}
-                className="w-full p-2.5 border border-slate-300 rounded-md text-sm bg-white"
+                className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Choose an example blueprint --</option>
                 {BLUEPRINTS.map((b) => (
@@ -470,7 +474,7 @@ function AppContent() {
             <button
               onClick={checkCompliance}
               disabled={loading || !canCheckCompliance}
-              className="mt-4 w-full bg-accent text-white p-3 rounded-md font-bold hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed shadow transition-colors cursor-pointer"
+              className="mt-4 w-full bg-accent text-white p-3 rounded-lg font-bold hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:cursor-not-allowed shadow transition-colors cursor-pointer"
             >
               {loading ? "Running Multi-Agent Compliance Pipeline…" : "Check Compliance"}
             </button>
@@ -480,15 +484,15 @@ function AppContent() {
           {result && activeBlueprint && (
             <section className="mt-8 space-y-6">
               {/* Header with status */}
-              <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Findings &amp; Readiness</h2>
-                  <p className="text-xs text-slate-500">
-                    Blueprint: <span className="font-semibold text-slate-700">{activeBlueprint.label}</span>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Findings &amp; Readiness</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Blueprint: <span className="font-semibold text-slate-700 dark:text-slate-300">{activeBlueprint.label}</span>
                   </p>
                 </div>
                 {hasAppliedRipple && (
-                  <span className="text-xs bg-amber-100 text-amber-900 border border-amber-300 font-semibold px-3 py-1 rounded-full flex items-center gap-1 animate-pulse">
+                  <span className="text-xs bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-semibold px-3 py-1 rounded-full flex items-center gap-1.5 animate-pulse font-mono">
                     <span>⚡</span>
                     <span>Plan Modification Applied</span>
                   </span>
@@ -520,14 +524,14 @@ function AppContent() {
               {/* Phase 2: Visual Evidence Layer (Spatial Blueprint Viewer) */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wide flex items-center gap-2 font-mono">
                     <span>🗺️</span>
                     <span>Interactive Visual Evidence Layer</span>
                   </h3>
                   {highlightedElementId && (
                     <button
                       onClick={() => setHighlightedElementId(null)}
-                      className="text-xs text-blue-600 hover:underline font-semibold cursor-pointer"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                     >
                       Clear Selection
                     </button>
@@ -545,14 +549,14 @@ function AppContent() {
 
               {/* Phase 1: Generalized Ripple Engine Demo Action Card (Basement Bedroom Conversion) */}
               {result.blueprintId === "bp-blocking" && (
-                <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-xs">
+                <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-900 rounded-xl shadow-xs">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl">⚡</span>
-                    <h3 className="font-bold text-slate-900 text-base">
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                       The Ripple Engine — Generalized Spatial Simulation
                     </h3>
                   </div>
-                  <p className="mb-4 text-xs text-slate-600 max-w-2xl leading-relaxed">
+                  <p className="mb-4 text-xs text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
                     Simulate modifying blueprint dimensions to resolve egress opening constraints.
                     Translating Window W2 +300mm east clears egress width/height, but automatically tests proximity to the east lot boundary via the live recheck loop.
                   </p>
@@ -563,7 +567,7 @@ function AppContent() {
                         id="move-window-btn"
                         onClick={handleMoveWindowEast}
                         disabled={isRechecking}
-                        className="px-4 py-2.5 bg-blue-600 text-white rounded-md font-bold text-sm hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed shadow transition-colors flex items-center gap-2 cursor-pointer"
+                        className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 disabled:bg-slate-400 dark:disabled:bg-slate-700 disabled:cursor-not-allowed shadow transition-colors flex items-center gap-2 cursor-pointer"
                       >
                         {isRechecking ? (
                           <>
@@ -579,12 +583,12 @@ function AppContent() {
                       </button>
                     ) : (
                       <div className="flex items-center gap-3">
-                        <span className="px-3 py-1.5 text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-md">
+                        <span className="px-3 py-1.5 text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 rounded-lg">
                           ✓ Window Moved +300mm East (Egress Cleared)
                         </span>
                         <button
                           onClick={handleResetRipple}
-                          className="px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors cursor-pointer"
+                          className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                         >
                           Reset Baseline
                         </button>
@@ -605,17 +609,17 @@ function AppContent() {
               )}
 
               {/* Governance Note */}
-              <div className="p-3.5 bg-slate-100/90 rounded-lg text-xs italic text-slate-700 border border-slate-200">
+              <div className="p-3.5 bg-slate-100/90 dark:bg-slate-900 rounded-xl text-xs italic text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
                 {result.governanceNote}
               </div>
 
               {/* Structured Findings List */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wide">
+                  <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wide font-mono">
                     Compliance Findings ({result.findings.length})
                   </h3>
-                  <span className="text-xs text-slate-400">Click any card to highlight element</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">Click any card to highlight element</span>
                 </div>
 
                 {result.findings.map((f) => {
@@ -639,7 +643,7 @@ function AppContent() {
                 })}
 
                 {result.findings.length === 0 && (
-                  <div className="p-5 bg-emerald-50 border border-emerald-300 text-emerald-800 font-bold rounded-lg flex items-center gap-2">
+                  <div className="p-5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 font-bold rounded-xl flex items-center gap-2">
                     <span className="text-xl">✓</span>
                     <span>No issues detected in this automated check. All 19 municipal code clauses satisfied.</span>
                   </div>
@@ -647,8 +651,8 @@ function AppContent() {
               </div>
 
               {/* Agent Pipeline Reasoning */}
-              <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 overflow-auto">
-                <p className="font-semibold mb-2 text-slate-800">Agent Pipeline Reasoning &amp; Governance Trace:</p>
+              <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-600 dark:text-slate-300 overflow-auto">
+                <p className="font-semibold mb-2 text-slate-800 dark:text-slate-200 font-mono">Agent Pipeline Reasoning &amp; Governance Trace:</p>
                 <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed">
                   {result.agentReasoning}
                 </pre>
@@ -658,19 +662,19 @@ function AppContent() {
         </div>
       ) : !isLoggedIn ? (
         <div className="p-8 max-w-lg mx-auto py-20">
-          <div className="bg-white p-8 border border-slate-200 rounded-xl shadow-sm text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-2xl">
+          <div className="bg-white dark:bg-slate-900 p-8 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 text-2xl">
               🔒
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               Reviewer Sign-In Required
             </h2>
-            <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
               The Reviewer Dashboard is restricted to municipal staff to manage application queues, inspect audit logs, and issue official correction letters.
             </p>
             <button
               onClick={() => router.push(`/login?redirect=${encodeURIComponent("/app?tab=reviewer")}`)}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded font-bold hover:bg-blue-700 transition-colors cursor-pointer shadow-sm"
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors cursor-pointer shadow-sm"
             >
               Sign In as Reviewer
             </button>
@@ -685,7 +689,7 @@ function AppContent() {
 
 export default function AppPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500 font-medium">Loading PraxisCompliance…</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-500 font-medium">Loading PraxisCompliance…</div>}>
       <AppContent />
     </Suspense>
   );

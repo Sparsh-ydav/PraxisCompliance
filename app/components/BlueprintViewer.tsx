@@ -41,37 +41,37 @@ export default function BlueprintViewer({
   );
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-3 transition-all">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 transition-colors">
       {/* Header bar */}
-      <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
+      <div className="flex flex-wrap items-center justify-between mb-3 pb-2.5 border-b border-slate-100 dark:border-slate-800 gap-2">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-          <span className="text-xs font-bold text-slate-800 tracking-wide uppercase">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wide uppercase font-mono">
             Spatial Blueprint Model — {blueprint.label.split("—")[1] || blueprint.label}
           </span>
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-slate-500">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-slate-700 inline-block" /> Rooms & Walls
+        <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-xs bg-slate-700 dark:bg-slate-400 inline-block" /> Rooms & Walls
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2.5 h-1.5 rounded-sm bg-sky-500 inline-block" /> Openings
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-1.5 rounded-xs bg-sky-500 inline-block" /> Openings
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-0.5 border-b border-rose-500 border-dashed inline-block" /> Setback
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 border-b border-rose-500 border-dashed inline-block" /> Setback Line
           </span>
         </div>
       </div>
 
       {/* SVG Container */}
-      <div className="relative overflow-hidden rounded border border-slate-100 bg-slate-50/70">
+      <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950">
         <svg
           viewBox={viewBox}
-          className="w-full h-auto"
-          style={{ maxHeight: 250 }}
+          className="w-full h-auto text-slate-200 dark:text-slate-800"
+          style={{ maxHeight: 260 }}
         >
           <defs>
-            {/* Grid background */}
+            {/* Light grid pattern */}
             <pattern
               id={`grid-${blueprint.id}`}
               width="20"
@@ -81,8 +81,9 @@ export default function BlueprintViewer({
               <path
                 d="M 20 0 L 0 0 0 20"
                 fill="none"
-                stroke="#e2e8f0"
+                stroke="currentColor"
                 strokeWidth="0.5"
+                className="opacity-70 dark:opacity-40"
               />
             </pattern>
 
@@ -91,7 +92,7 @@ export default function BlueprintViewer({
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#f43f5e" floodOpacity="0.8" />
             </filter>
             <filter id="glow-active" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#0284c7" floodOpacity="0.8" />
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#38bdf8" floodOpacity="0.9" />
             </filter>
           </defs>
 
@@ -114,20 +115,23 @@ export default function BlueprintViewer({
                     width={bounds.width}
                     height={bounds.height}
                     fill={`url(#grid-${blueprint.id})`}
-                    className="transition-colors"
                   />
                   <rect
                     x={bounds.x}
                     y={bounds.y}
                     width={bounds.width}
                     height={bounds.height}
-                    fill={isHighlight ? "rgba(59, 130, 246, 0.08)" : "rgba(248, 250, 252, 0.4)"}
-                    stroke={isHighlight ? "#2563eb" : "#334155"}
+                    fill={
+                      isHighlight
+                        ? "rgba(59, 130, 246, 0.12)"
+                        : "rgba(248, 250, 252, 0.4)"
+                    }
+                    stroke={isHighlight ? "#3b82f6" : "#475569"}
                     strokeWidth={isHighlight ? "3" : "2.5"}
                     strokeDasharray={isHighlight ? "4,2" : "none"}
-                    rx="2"
+                    rx="3"
                     filter={isHighlight ? "url(#glow-active)" : undefined}
-                    className="transition-all duration-300"
+                    className="transition-all duration-300 dark:fill-slate-900/60 dark:stroke-slate-600"
                   />
                   <text
                     x={bounds.x + bounds.width / 2}
@@ -136,9 +140,9 @@ export default function BlueprintViewer({
                     className="font-medium"
                     style={{
                       fontSize: 9,
-                      fontFamily: "system-ui, sans-serif",
-                      fill: isHighlight ? "#1d4ed8" : "#64748b",
-                      fontWeight: isHighlight ? 700 : 500,
+                      fontFamily: "var(--font-sans), system-ui, sans-serif",
+                      fill: isHighlight ? "#2563eb" : "#94a3b8",
+                      fontWeight: isHighlight ? 700 : 600,
                     }}
                   >
                     {elem.label}
@@ -155,7 +159,7 @@ export default function BlueprintViewer({
               x="0"
               y="-12"
               textAnchor="middle"
-              style={{ fontSize: 7, fontFamily: "system-ui, sans-serif", fill: "#94a3b8", fontWeight: 700 }}
+              style={{ fontSize: 7, fontFamily: "var(--font-mono), monospace", fill: "#94a3b8", fontWeight: 700 }}
             >
               N
             </text>
@@ -190,7 +194,7 @@ export default function BlueprintViewer({
                     textAnchor="middle"
                     style={{
                       fontSize: 7.5,
-                      fontFamily: "system-ui, sans-serif",
+                      fontFamily: "var(--font-mono), monospace",
                       fill: strokeColor,
                       fontWeight: isHighlight || isViolatedInRipple ? 700 : 600,
                     }}
@@ -232,12 +236,12 @@ export default function BlueprintViewer({
                     }
                     stroke={
                       isHighlight
-                        ? "#b45309"
+                        ? "#d97706"
                         : isW2Moved
-                        ? "#047857"
+                        ? "#059669"
                         : isWindow
                         ? "#0284c7"
-                        : "#6d28d9"
+                        : "#7c3aed"
                     }
                     strokeWidth={isHighlight ? "2.5" : "1.5"}
                     rx="1.5"
@@ -252,8 +256,8 @@ export default function BlueprintViewer({
                     textAnchor="middle"
                     style={{
                       fontSize: 8,
-                      fontFamily: "system-ui, sans-serif",
-                      fill: isHighlight ? "#b45309" : "#334155",
+                      fontFamily: "var(--font-mono), monospace",
+                      fill: isHighlight ? "#f59e0b" : "#94a3b8",
                       fontWeight: isHighlight ? 700 : 600,
                       transition: "all 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}
@@ -294,23 +298,24 @@ export default function BlueprintViewer({
                       fill={isViolated ? "#f43f5e" : "#64748b"}
                     />
                     <rect
-                      x={(wX + 30 + bX) / 2 - 32}
+                      x={(wX + 30 + bX) / 2 - 34}
                       y={dY - 11}
-                      width="64"
-                      height="14"
+                      width="68"
+                      height="15"
                       fill={isViolated ? "#ffe4e6" : "#ffffff"}
                       stroke={isViolated ? "#f43f5e" : "#94a3b8"}
                       strokeWidth="0.8"
                       rx="2"
+                      className="dark:fill-slate-900"
                     />
                     <text
                       x={(wX + 30 + bX) / 2}
-                      y={dY - 1}
+                      y={dY}
                       textAnchor="middle"
                       style={{
                         fontSize: 7.5,
-                        fontFamily: "system-ui, sans-serif",
-                        fill: isViolated ? "#e11d48" : "#475569",
+                        fontFamily: "var(--font-mono), monospace",
+                        fill: isViolated ? "#e11d48" : "#64748b",
                         fontWeight: 700,
                       }}
                     >
@@ -325,8 +330,8 @@ export default function BlueprintViewer({
 
         {/* Loading overlay during recheck */}
         {isRechecking && (
-          <div className="absolute inset-0 bg-white/75 backdrop-blur-[1px] flex items-center justify-center">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white rounded-full text-xs font-semibold shadow">
+          <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-[2px] flex items-center justify-center">
+            <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 dark:bg-blue-600 text-white rounded-full text-xs font-semibold shadow-lg">
               <svg className="animate-spin h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -338,22 +343,22 @@ export default function BlueprintViewer({
       </div>
 
       {/* Selected element badge */}
-      <div className="mt-2.5 flex items-center justify-between text-xs px-1">
+      <div className="mt-3 flex flex-wrap items-center justify-between text-xs px-1 gap-2">
         {highlightedElement ? (
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] flex items-center gap-1">
+            <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-semibold text-[11px] flex items-center gap-1">
               <span>🎯 Focused Element:</span>
               <span className="font-mono">{highlightedElement.elementId}</span>
             </span>
-            <span className="text-slate-600 text-[11px]">{highlightedElement.label}</span>
+            <span className="text-slate-600 dark:text-slate-400 text-[11px]">{highlightedElement.label}</span>
           </div>
         ) : (
-          <span className="text-slate-400 text-[11px] italic">
+          <span className="text-slate-400 dark:text-slate-500 text-[11px] italic">
             Click any finding card below to highlight its source element on the blueprint.
           </span>
         )}
 
-        <span className="text-[10px] text-slate-400">Scale: 1/4″ = 1′-0″</span>
+        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Scale: 1/4″ = 1′-0″</span>
       </div>
     </div>
   );

@@ -80,25 +80,25 @@ export default function ReviewerDashboard() {
   const pendingApps = applications.filter((app) => app.status === "pending");
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Reviewer Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Maplewood Township Department of Code Enforcement & Plan Examination
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">Reviewer Dashboard</h1>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Maplewood Township Department of Code Enforcement &amp; Plan Examination
           </p>
         </div>
-        <div className="text-xs bg-slate-100 px-4 py-2.5 rounded-lg border border-slate-200">
-          <span className="font-semibold text-slate-700">Session Actions:</span>{" "}
-          <span className="text-emerald-700 font-bold">{approvedAsIs}</span> approved as-is,{" "}
-          <span className="text-blue-700 font-bold">{editedBeforeApproval}</span> edited & approved,{" "}
-          <span className="text-rose-700 font-bold">{rejected}</span> rejected
+        <div className="text-xs bg-slate-100 dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+          <span className="font-semibold text-slate-700 dark:text-slate-300">Session Actions:</span>{" "}
+          <span className="text-emerald-700 dark:text-emerald-400 font-bold">{approvedAsIs}</span> approved as-is,{" "}
+          <span className="text-blue-700 dark:text-blue-400 font-bold">{editedBeforeApproval}</span> edited &amp; approved,{" "}
+          <span className="text-rose-700 dark:text-rose-400 font-bold">{rejected}</span> rejected
         </div>
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 mb-6 border-b border-slate-200">
+      <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => {
             setActiveSubTab("queue");
@@ -106,8 +106,8 @@ export default function ReviewerDashboard() {
           }}
           className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 cursor-pointer ${
             activeSubTab === "queue"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           Application Queue ({pendingApps.length})
@@ -119,8 +119,8 @@ export default function ReviewerDashboard() {
           }}
           className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 cursor-pointer flex items-center gap-1.5 ${
             activeSubTab === "audit"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <span>📋</span>
@@ -133,8 +133,8 @@ export default function ReviewerDashboard() {
           }}
           className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 cursor-pointer flex items-center gap-1.5 ${
             activeSubTab === "jurisdiction"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <span>🏛️</span>
@@ -153,7 +153,7 @@ export default function ReviewerDashboard() {
         <>
           {!selectedApp ? (
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-slate-800">
+              <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
                 Pending Plan Submissions ({pendingApps.length})
               </h2>
 
@@ -162,29 +162,29 @@ export default function ReviewerDashboard() {
                   <div
                     key={app.id}
                     onClick={() => loadApplication(app)}
-                    className="bg-white p-4 border border-slate-200 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-shadow"
+                    className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs hover:shadow-md cursor-pointer transition-all hover:border-blue-300 dark:hover:border-slate-700"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-bold text-lg text-slate-900">{app.applicantName}</h3>
-                        <p className="text-sm text-slate-600">{app.projectAddress}</p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{app.applicantName}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{app.projectAddress}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-mono">
                           {app.projectType} • Case #{app.caseNumber} • Filed {app.submittedDate}
                         </p>
                       </div>
                       <div className="text-right">
                         <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold font-mono ${
                             app.severity === "high"
-                              ? "bg-rose-100 text-rose-800 border border-rose-200"
+                              ? "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-900"
                               : app.severity === "medium"
-                              ? "bg-amber-100 text-amber-800 border border-amber-200"
-                              : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900"
+                              : "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900"
                           }`}
                         >
                           {app.severity.toUpperCase()} RISK
                         </span>
-                        <p className="text-xs mt-2 text-slate-500">
+                        <p className="text-xs mt-2 text-slate-500 dark:text-slate-400">
                           {app.blockingCount > 0 && `${app.blockingCount} blocking`}
                           {app.blockingCount > 0 && app.advisoryCount > 0 && ", "}
                           {app.advisoryCount > 0 && `${app.advisoryCount} advisory`}
@@ -200,14 +200,14 @@ export default function ReviewerDashboard() {
             <div>
               <button
                 onClick={() => setSelectedApp(null)}
-                className="mb-4 text-blue-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                className="mb-4 text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer text-sm"
               >
                 ← Back to Queue
               </button>
 
-              <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-6">
-                <h2 className="text-2xl font-bold mb-1 text-slate-900">{selectedApp.applicantName}</h2>
-                <p className="text-slate-500 text-sm mb-4">
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 transition-colors">
+                <h2 className="text-2xl font-bold mb-1 text-slate-900 dark:text-slate-100">{selectedApp.applicantName}</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-4 font-mono">
                   {selectedApp.projectAddress} • Case #{selectedApp.caseNumber}
                 </p>
 
@@ -218,7 +218,7 @@ export default function ReviewerDashboard() {
                   advisoryCount={selectedApp.advisoryCount}
                 />
 
-                <h3 className="font-semibold text-lg mb-3 mt-6 text-slate-900">
+                <h3 className="font-semibold text-lg mb-3 mt-6 text-slate-900 dark:text-slate-100">
                   Findings ({selectedApp.findings.length})
                 </h3>
                 {selectedApp.findings.length > 0 ? (
@@ -228,24 +228,24 @@ export default function ReviewerDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-emerald-700 font-bold mb-6 bg-emerald-50 p-3 rounded border border-emerald-200">
+                  <p className="text-emerald-700 dark:text-emerald-300 font-bold mb-6 bg-emerald-50 dark:bg-emerald-950/50 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800">
                     ✓ No issues detected — Application complies with all requirements.
                   </p>
                 )}
 
-                <h3 className="font-semibold text-lg mb-3 text-slate-900">Draft Correction Letter</h3>
+                <h3 className="font-semibold text-lg mb-3 text-slate-900 dark:text-slate-100">Draft Correction Letter</h3>
                 {loading ? (
-                  <div className="p-8 text-center text-slate-500 bg-slate-50 rounded border">
+                  <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800">
                     Generating official correction letter draft…
                   </div>
                 ) : isEditing ? (
                   <textarea
                     value={draftLetter}
                     onChange={(e) => setDraftLetter(e.target.value)}
-                    className="w-full h-96 p-4 border rounded font-mono text-sm bg-white"
+                    className="w-full h-96 p-4 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 ) : (
-                  <pre className="bg-slate-50 p-4 rounded border text-sm whitespace-pre-wrap font-mono text-slate-800">
+                  <pre className="bg-slate-50 dark:bg-slate-950 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-sm whitespace-pre-wrap font-mono text-slate-800 dark:text-slate-200 leading-relaxed">
                     {draftLetter}
                   </pre>
                 )}
@@ -255,7 +255,7 @@ export default function ReviewerDashboard() {
                     <>
                       <button
                         onClick={() => updateStatus(selectedApp.id, "approved", false)}
-                        className="px-6 py-2.5 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                        className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
                       >
                         Sign Off &amp; Issue
                       </button>
@@ -269,7 +269,7 @@ export default function ReviewerDashboard() {
                             "Reviewer opened draft correction letter for manual edits."
                           );
                         }}
-                        className="px-6 py-2.5 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"
+                        className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"
                       >
                         Edit Letter
                       </button>
@@ -279,7 +279,7 @@ export default function ReviewerDashboard() {
                             updateStatus(selectedApp.id, "rejected");
                           }
                         }}
-                        className="px-6 py-2.5 bg-rose-600 text-white rounded font-bold hover:bg-rose-700 transition-colors shadow-sm cursor-pointer"
+                        className="px-6 py-2.5 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 transition-colors shadow-sm cursor-pointer"
                       >
                         Reject
                       </button>
@@ -291,13 +291,13 @@ export default function ReviewerDashboard() {
                           setIsEditing(false);
                           updateStatus(selectedApp.id, "approved", true);
                         }}
-                        className="px-6 py-2.5 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                        className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
                       >
                         Sign Off Edited Letter
                       </button>
                       <button
                         onClick={() => setIsEditing(false)}
-                        className="px-6 py-2.5 bg-slate-400 text-white rounded font-bold hover:bg-slate-500 transition-colors shadow-sm cursor-pointer"
+                        className="px-6 py-2.5 bg-slate-400 dark:bg-slate-700 text-white rounded-lg font-bold hover:bg-slate-500 dark:hover:bg-slate-600 transition-colors shadow-sm cursor-pointer"
                       >
                         Cancel Edit
                       </button>
