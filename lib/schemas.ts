@@ -3,18 +3,15 @@
 
 import { z } from "zod";
 
-// --- Proposed Change (input for the generalized Ripple Engine) ---
-export const ProposedChangeSchema = z.object({
-  blueprintId: z.string(),
-  elementType: z.enum(["window", "door", "wall", "room", "setback"]),
-  elementId: z.string(),                 // e.g. "W2", "rm-003", "side"
-  property: z.string(),                  // e.g. "clearWidthInches", "position.x"
-  currentValue: z.union([z.number(), z.string()]),
-  newValue: z.union([z.number(), z.string()]),
-  description: z.string(),               // human-readable: "Widen Window W2 to 24 inches"
+// --- Blueprint Change (input for the generalized Ripple Engine) ---
+export const BlueprintChangeSchema = z.object({
+  elementId: z.string(),              // e.g. "W2", "rm-003", "D1"
+  property: z.enum(["position", "width", "height", "sillHeight"]),
+  delta: z.number(),                  // signed change amount
+  unit: z.enum(["mm", "in", "ft"]),
 });
 
-export type ProposedChange = z.infer<typeof ProposedChangeSchema>;
+export type BlueprintChange = z.infer<typeof BlueprintChangeSchema>;
 
 // --- Compliance Finding ---
 export const ComplianceFindingSchema = z.object({
@@ -91,19 +88,3 @@ export const RetrievedClausesSchema = z.object({
 });
 
 export type RetrievedClauses = z.infer<typeof RetrievedClausesSchema>;
-
-// --- Ripple Simulation Result (output of the generalized Ripple Engine) ---
-export const RippleSimulationResultSchema = z.object({
-  change: ProposedChangeSchema,
-  resolvedFindingIds: z.array(z.string()),
-  newFindings: z.array(ComplianceFindingSchema),
-  affectedClauseIds: z.array(z.string()),
-  updatedReadinessScore: z.number(),
-  elementDelta: z.object({
-    elementId: z.string(),
-    before: z.record(z.unknown()),
-    after: z.record(z.unknown()),
-  }).optional(),
-});
-
-export type RippleSimulationResult = z.infer<typeof RippleSimulationResultSchema>;

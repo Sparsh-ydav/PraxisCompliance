@@ -1,15 +1,15 @@
 // Recheck API route — POST endpoint for the generalized recheck loop.
-// Accepts a blueprint ID and an array of proposed changes,
+// Accepts a blueprint ID and an array of BlueprintChange objects,
 // runs each through the Ripple Engine, and returns the aggregated diff.
 
 import type { NextRequest } from "next/server";
 import { recheckCompliance } from "@/lib/recheck";
-import { ProposedChangeSchema } from "@/lib/schemas";
+import { BlueprintChangeSchema } from "@/lib/schemas";
 import { z } from "zod";
 
 const RecheckRequestSchema = z.object({
   blueprintId: z.string(),
-  changes: z.array(ProposedChangeSchema).min(1),
+  changes: z.array(BlueprintChangeSchema).min(1),
 });
 
 export async function POST(request: NextRequest) {

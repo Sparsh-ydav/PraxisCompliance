@@ -64,8 +64,7 @@ export const FALLBACK_BLOCKING: ComplianceResult = {
         "The basement conversion creates a new sleeping room. Section 101.9 requires interconnected smoke alarms on all floors and in each new sleeping room. Based on historical patterns, Maplewood reviewers flag every new-sleeping-room application that lacks an explicit smoke alarm location plan.",
       clauseId: "FE-109",
       clauseCitation: "Section 101.9 — Interconnected smoke alarms required for new sleeping rooms",
-      evidence: "Room rm-003, basement bedroom — new sleeping room created without interconnected smoke alarm plan",
-      elementId: "rm-003",
+      evidence: "Administrative/Documentation — new sleeping room created without interconnected smoke alarm plan",
       severity: "blocking",
       source: "learned_pattern",
       confidence: 0.85,
@@ -90,7 +89,7 @@ export const FALLBACK_ADVISORY: ComplianceResult = {
       clauseCitation:
         "Section 201.3 — Minimum side setback: 6 feet (Section 201.8 admin waiver available for encroachments ≤ 6 inches)",
       evidence: 'Wall E1, Kitchen Extension (east wall) — parsed side setback: 5.67 ft (5\' 8") vs 6.0 ft min',
-      elementId: "rm-004",
+      elementId: "setback-side",
       severity: "advisory",
       source: "learned_pattern",
       confidence: 0.92,

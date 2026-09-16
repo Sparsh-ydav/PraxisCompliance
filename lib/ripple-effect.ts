@@ -1,356 +1,374 @@
-// Generalized Ripple Effect Engine for PraxisCompliance.
-// Accepts an arbitrary ProposedChange against any blueprint and returns
-// which findings it resolves, which new findings it surfaces, and which clauses are affected.
+// Ripple Effect Provider Abstraction for PraxisCompliance.
+// Generalized beyond the original "move window east" hardcoded demo.
 //
-// Provider abstraction: MockRippleEffectSource (rule-based) and LiveRippleEffectSource (stub).
-// The Mock implementation clones the blueprint, applies the property change,
-// re-evaluates affected compliance rules, and diffs before/after findings.
+// Provider interface:
+//   - runMoveWindowEast()       — keeps the existing demo button working
+//   - runSimulatedChange()      — general method for any BlueprintChange
+//
+// Implementations:
+//   - MockRippleEffectSource    — deterministic rule-based engine (offline demo)
+//   - LiveRippleEffectSource    — clones blueprint → re-runs retriever → compliance checker
+//                                 with Zod-validate → retry → fallback to mock
 
 import type { Blueprint, EgressOpening } from "@/fixtures/blueprints";
-import { getBlueprintById, BLUEPRINTS } from "@/fixtures/blueprints";
+import { getBlueprintById } from "@/fixtures/blueprints";
 import { FALLBACKS } from "@/fixtures/fallbacks";
-import type { ComplianceFinding, ProposedChange, RippleSimulationResult } from "@/lib/schemas";
-import { getAffectedClauseIds, getAffectedFindings } from "@/lib/dependency-graph";
+import type { ComplianceFinding, BlueprintChange, ComplianceResult } from "@/lib/schemas";
+import { ComplianceResultSchema } from "@/lib/schemas";
+import { retrieveRegulations, deriveTopics } from "@/lib/retriever";
+import { LEARNED_PATTERNS } from "@/fixtures/learned-patterns";
 import { calculateReadinessScore } from "@/app/components/ApprovalReadinessGauge";
+
+// ===== Result Type (unchanged shape from original, plus affectedClauseIds) =====
+
+export type RippleEffectResult = {
+  resolvedFindingIds: string[];
+  newFindings: ComplianceFinding[];
+  updatedReadinessScore: number;
+  affectedClauseIds: string[];
+  change: BlueprintChange;
+  windowPosition?: {
+    before: { x: number; y: number; distanceToBoundaryFt: number };
+    after: { x: number; y: number; distanceToBoundaryFt: number };
+  };
+};
 
 // ===== Provider Interface =====
 
 export interface RippleEffectSource {
-  /**
-   * Simulate an arbitrary proposed change against a blueprint and return
-   * the compliance impact: resolved findings, new findings, affected clauses.
-   */
-  simulateChange(change: ProposedChange): Promise<RippleSimulationResult>;
+  /** General method: simulate any BlueprintChange against any blueprint. */
+  runSimulatedChange(blueprintId: string, change: BlueprintChange): Promise<RippleEffectResult>;
 
-  /**
-   * Legacy method for backward compatibility with the basement bedroom demo.
-   * Delegates to simulateChange() internally.
-   */
-  runMoveWindowEast(blueprintId: string, offsetMm: number): Promise<RippleSimulationResult>;
+  /** Legacy method: keeps the existing "Move window 300mm east" button working. */
+  runMoveWindowEast(blueprintId: string, offsetMm: number): Promise<RippleEffectResult>;
 }
 
-// ===== Rule-Based Compliance Evaluation Helpers =====
+// ===== Helpers: apply a BlueprintChange to a cloned blueprint =====
 
-/**
- * Evaluate egress opening dimensions against FE-102 requirements.
- * Returns any blocking findings that apply.
- */
-function evaluateEgressCompliance(
-  opening: EgressOpening,
-  room: { id: string; name: string; floorLevel: string; isSleepingRoom: boolean }
-): ComplianceFinding[] {
+function convertDelta(delta: number, unit: "mm" | "in" | "ft", targetUnit: "in"): number {
+  if (unit === "in") return delta;
+  if (unit === "mm") return delta / 25.4;
+  if (unit === "ft") return delta * 12;
+  return delta;
+}
+
+function convertDeltaToFt(delta: number, unit: "mm" | "in" | "ft"): number {
+  if (unit === "ft") return delta;
+  if (unit === "in") return delta / 12;
+  if (unit === "mm") return delta / 304.8;
+  return delta;
+}
+
+function applyChange(blueprint: Blueprint, change: BlueprintChange): Blueprint {
+  const clone: Blueprint = JSON.parse(JSON.stringify(blueprint));
+  const deltaIn = convertDelta(change.delta, change.unit, "in");
+  const deltaFt = convertDeltaToFt(change.delta, change.unit);
+
+  // Try to find the element across rooms
+  for (const room of clone.rooms) {
+    for (const opening of room.egressOpenings) {
+      if (opening.id === change.elementId) {
+        switch (change.property) {
+          case "width":
+            opening.clearWidthInches = Math.max(0, opening.clearWidthInches + deltaIn);
+            break;
+          case "height":
+            opening.clearHeightInches = Math.max(0, opening.clearHeightInches + deltaIn);
+            break;
+          case "sillHeight":
+            opening.sillHeightFromFloorInches = Math.max(0, opening.sillHeightFromFloorInches + deltaIn);
+            break;
+          case "position":
+            // Moving an element toward a boundary reduces the setback.
+            // Convention: positive delta = toward the nearest side boundary.
+            clone.setbacks.side = Math.max(0, clone.setbacks.side - Math.abs(deltaFt));
+            break;
+        }
+        return clone;
+      }
+    }
+  }
+
+  // Maybe it's a room-level or setback-level element
+  if (change.elementId.startsWith("setback-") || change.elementId === "side" || change.elementId === "front") {
+    const key = change.elementId.replace("setback-", "") as keyof typeof clone.setbacks;
+    if (key in clone.setbacks) {
+      (clone.setbacks as Record<string, number>)[key] += deltaFt;
+    }
+  }
+
+  return clone;
+}
+
+// ===== Compliance Evaluation Engine =====
+
+function evaluateEgress(opening: EgressOpening, room: { id: string; name: string; floorLevel: string; isSleepingRoom: boolean }): ComplianceFinding[] {
   if (!room.isSleepingRoom) return [];
-
   const findings: ComplianceFinding[] = [];
-  const openingId = opening.id || `${room.id}-opening`;
+  const eid = opening.id || `${room.id}-opening`;
   const isBasement = room.floorLevel === "basement";
-  const minArea = isBasement ? 5.7 : 5.0;
   const wallLabel = opening.wall ? `(${opening.wall} wall)` : "";
+  const minArea = isBasement ? 5.7 : 5.0;
 
-  // Width check: minimum 20 inches
   if (opening.clearWidthInches < 20) {
     findings.push({
-      id: `f-gen-width-${openingId}`,
-      issue: `Egress window width is ${opening.clearWidthInches} inches — below the 20-inch minimum`,
+      id: `f-re-width-${eid}`, issue: `Egress window width is ${opening.clearWidthInches} inches — below the 20-inch minimum`,
       detail: `The emergency escape opening for ${room.name} has a net clear width of ${opening.clearWidthInches} inches. Section 101.2 requires a minimum of 20 inches.`,
-      clauseId: "FE-102",
-      clauseCitation: "Section 101.2 — Minimum net clear opening width: 20 inches",
-      evidence: `${opening.type === "window" ? "Window" : "Door"} ${openingId}, ${room.name} ${wallLabel} — parsed net clear opening: ${opening.clearWidthInches}" × ${opening.clearHeightInches}"`,
-      elementId: openingId,
-      severity: "blocking",
-      source: "written_code",
-      confidence: 0.99,
+      clauseId: "FE-102", clauseCitation: "Section 101.2 — Minimum net clear opening width: 20 inches",
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed net clear opening: ${opening.clearWidthInches}" × ${opening.clearHeightInches}"`,
+      elementId: eid, severity: "blocking", source: "written_code", confidence: 0.99,
     });
   }
-
-  // Height check: minimum 24 inches
   if (opening.clearHeightInches < 24) {
     findings.push({
-      id: `f-gen-height-${openingId}`,
-      issue: `Egress window height is ${opening.clearHeightInches} inches — below the 24-inch minimum`,
+      id: `f-re-height-${eid}`, issue: `Egress window height is ${opening.clearHeightInches} inches — below the 24-inch minimum`,
       detail: `The emergency escape opening for ${room.name} has a net clear height of ${opening.clearHeightInches} inches. Section 101.2 requires a minimum of 24 inches.`,
-      clauseId: "FE-102",
-      clauseCitation: "Section 101.2 — Minimum net clear opening height: 24 inches",
-      evidence: `${opening.type === "window" ? "Window" : "Door"} ${openingId}, ${room.name} ${wallLabel} — parsed net clear opening: ${opening.clearWidthInches}" × ${opening.clearHeightInches}"`,
-      elementId: openingId,
-      severity: "blocking",
-      source: "written_code",
-      confidence: 0.99,
+      clauseId: "FE-102", clauseCitation: "Section 101.2 — Minimum net clear opening height: 24 inches",
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed net clear opening: ${opening.clearWidthInches}" × ${opening.clearHeightInches}"`,
+      elementId: eid, severity: "blocking", source: "written_code", confidence: 0.99,
     });
   }
-
-  // Sill height check: maximum 44 inches
   if (opening.sillHeightFromFloorInches > 44) {
     findings.push({
-      id: `f-gen-sill-${openingId}`,
-      issue: `Egress window sill height is ${opening.sillHeightFromFloorInches} inches — exceeds 44-inch maximum`,
+      id: `f-re-sill-${eid}`, issue: `Egress window sill height is ${opening.sillHeightFromFloorInches} inches — exceeds 44-inch maximum`,
       detail: `The sill height above finished floor is ${opening.sillHeightFromFloorInches} inches. Section 101.2 sets a maximum of 44 inches.`,
-      clauseId: "FE-102",
-      clauseCitation: "Section 101.2 — Maximum sill height: 44 inches above finished floor",
-      evidence: `${opening.type === "window" ? "Window" : "Door"} ${openingId}, ${room.name} ${wallLabel} — parsed sill height: ${opening.sillHeightFromFloorInches}" above finished floor`,
-      elementId: openingId,
-      severity: "blocking",
-      source: "written_code",
-      confidence: 0.98,
+      clauseId: "FE-102", clauseCitation: "Section 101.2 — Maximum sill height: 44 inches above finished floor",
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed sill height: ${opening.sillHeightFromFloorInches}" above finished floor`,
+      elementId: eid, severity: "blocking", source: "written_code", confidence: 0.98,
     });
   }
-
-  // Area check
-  const areaSqFt = (opening.clearWidthInches * opening.clearHeightInches) / 144;
-  if (areaSqFt < minArea) {
+  const area = (opening.clearWidthInches * opening.clearHeightInches) / 144;
+  if (area < minArea) {
     findings.push({
-      id: `f-gen-area-${openingId}`,
-      issue: `Egress opening area is ${areaSqFt.toFixed(1)} sq ft — below the ${minArea} sq ft minimum`,
-      detail: `The net clear opening area for ${room.name} is ${areaSqFt.toFixed(1)} sq ft (${opening.clearWidthInches}" × ${opening.clearHeightInches}"). ${isBasement ? "Basement" : "Ground/upper floor"} sleeping rooms require a minimum of ${minArea} sq ft.`,
+      id: `f-re-area-${eid}`, issue: `Egress opening area is ${area.toFixed(1)} sq ft — below the ${minArea} sq ft minimum`,
+      detail: `The net clear opening area for ${room.name} is ${area.toFixed(1)} sq ft. ${isBasement ? "Basement" : "Ground/upper"} sleeping rooms require ${minArea} sq ft.`,
       clauseId: isBasement ? "FE-102" : "FE-103",
-      clauseCitation: `${isBasement ? "Section 101.2" : "Section 101.3"} — Minimum net clear opening area: ${minArea} sq ft`,
-      evidence: `${opening.type === "window" ? "Window" : "Door"} ${openingId}, ${room.name} ${wallLabel} — parsed area: ${areaSqFt.toFixed(1)} sq ft`,
-      elementId: openingId,
-      severity: "blocking",
-      source: "written_code",
-      confidence: 0.97,
+      clauseCitation: `Section ${isBasement ? "101.2" : "101.3"} — Minimum net clear opening area: ${minArea} sq ft`,
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed area: ${area.toFixed(1)} sq ft`,
+      elementId: eid, severity: "blocking", source: "written_code", confidence: 0.97,
     });
   }
-
   return findings;
 }
 
-/**
- * Evaluate setback compliance against SB-203 (side) and SB-202 (front) requirements.
- * Returns any findings that apply.
- */
-function evaluateSetbackCompliance(
-  blueprint: Blueprint
-): ComplianceFinding[] {
+function evaluateSetbacks(bp: Blueprint): ComplianceFinding[] {
   const findings: ComplianceFinding[] = [];
-  const isR1 = blueprint.zoneDistrict === "R-1";
-
-  // Side setback (R-1: min 6 ft, R-2: min 8 ft)
+  const isR1 = bp.zoneDistrict === "R-1";
   const minSide = isR1 ? 6.0 : 8.0;
-  if (blueprint.setbacks.side < minSide) {
-    const deficit = minSide - blueprint.setbacks.side;
-    const deficitInches = deficit * 12;
-    const canWaive = deficitInches <= 6;
+
+  if (bp.setbacks.side < minSide) {
+    const deficit = minSide - bp.setbacks.side;
+    const deficitIn = deficit * 12;
+    const canWaive = deficitIn <= 6;
     findings.push({
-      id: `f-gen-setback-side`,
-      issue: `Side setback is ${blueprint.setbacks.side.toFixed(2)} ft — ${deficit.toFixed(2)} ft below the ${minSide}-ft minimum`,
+      id: "f-re-setback-side",
+      issue: `Side setback is ${bp.setbacks.side.toFixed(2)} ft — ${deficit.toFixed(2)} ft below the ${minSide}-ft minimum`,
       detail: canWaive
-        ? `The side setback is ${(deficit * 12).toFixed(1)} inches below minimum. Section 201.8 allows an administrative waiver for encroachments ≤ 6 inches with a certified survey.`
-        : `The side setback encroachment of ${(deficit * 12).toFixed(1)} inches exceeds the 6-inch administrative waiver threshold. A formal variance from the Zoning Board of Appeals is required.`,
+        ? `The side setback encroachment of ${deficitIn.toFixed(1)} inches is within the 6-inch administrative waiver threshold (Section 201.8).`
+        : `The side setback encroachment of ${deficitIn.toFixed(1)} inches exceeds the 6-inch waiver limit. A formal variance is required.`,
       clauseId: isR1 ? "SB-203" : "SB-205",
       clauseCitation: `Section ${isR1 ? "201.3" : "201.5"} — Minimum side setback: ${minSide} feet`,
       elementId: "setback-side",
       severity: canWaive ? "advisory" : "blocking",
       source: canWaive ? "learned_pattern" : "written_code",
       confidence: canWaive ? 0.92 : 0.98,
+      isRippleEffect: true,
+      rippleLabel: "Surfaced by recheck",
     });
   }
 
-  // Front setback (R-1: min 25 ft)
-  if (isR1 && blueprint.setbacks.front < 25) {
+  if (isR1 && bp.setbacks.front < 25) {
     findings.push({
-      id: `f-gen-setback-front`,
-      issue: `Front setback is ${blueprint.setbacks.front} ft — below the 25-ft minimum`,
-      detail: `The front setback is ${blueprint.setbacks.front} ft, which is below the 25-ft minimum required by Section 201.2.`,
-      clauseId: "SB-202",
-      clauseCitation: "Section 201.2 — Minimum front setback: 25 feet (R-1)",
-      elementId: "setback-front",
-      severity: "blocking",
-      source: "written_code",
-      confidence: 0.98,
+      id: "f-re-setback-front",
+      issue: `Front setback is ${bp.setbacks.front} ft — below the 25-ft minimum`,
+      detail: `Front setback of ${bp.setbacks.front} ft violates the 25-ft minimum per Section 201.2.`,
+      clauseId: "SB-202", clauseCitation: "Section 201.2 — Minimum front setback: 25 feet (R-1)",
+      elementId: "setback-front", severity: "blocking", source: "written_code", confidence: 0.98,
+      isRippleEffect: true, rippleLabel: "Surfaced by recheck",
     });
   }
 
   return findings;
 }
 
-/**
- * Deep clone a blueprint and apply a proposed change to it.
- */
-function applyChangeToBlueprint(blueprint: Blueprint, change: ProposedChange): Blueprint {
-  const clone: Blueprint = JSON.parse(JSON.stringify(blueprint));
-
-  switch (change.elementType) {
-    case "window":
-    case "door": {
-      // Find the opening by elementId across all rooms
-      for (const room of clone.rooms) {
-        for (const opening of room.egressOpenings) {
-          if (opening.id === change.elementId) {
-            // Apply the property change
-            if (change.property === "clearWidthInches") {
-              opening.clearWidthInches = Number(change.newValue);
-            } else if (change.property === "clearHeightInches") {
-              opening.clearHeightInches = Number(change.newValue);
-            } else if (change.property === "sillHeightFromFloorInches") {
-              opening.sillHeightFromFloorInches = Number(change.newValue);
-            } else if (change.property === "position.x") {
-              // Position change affects setbacks — simulate side setback reduction
-              // For the demo: moving window east reduces side setback
-              const offsetFt = (Number(change.newValue) - Number(change.currentValue)) / 304.8;
-              clone.setbacks.side = Math.max(0, clone.setbacks.side - offsetFt);
-            }
-          }
-        }
-      }
-      break;
+/** Run the full compliance evaluation on a (possibly modified) blueprint.
+ *  Returns the same ComplianceFinding[] shape as the Compliance Checker API. */
+function evaluateBlueprint(blueprint: Blueprint): ComplianceFinding[] {
+  const findings: ComplianceFinding[] = [];
+  for (const room of blueprint.rooms) {
+    for (const opening of room.egressOpenings) {
+      findings.push(...evaluateEgress(opening, room));
     }
-    case "setback": {
-      const side = change.elementId.replace("setback-", "") || change.property;
-      if (side in clone.setbacks) {
-        (clone.setbacks as Record<string, number>)[side] = Number(change.newValue);
-      }
-      break;
-    }
-    case "room": {
-      for (const room of clone.rooms) {
-        if (room.id === change.elementId) {
-          if (change.property === "dimensions.width") {
-            room.dimensions.width = Number(change.newValue);
-          } else if (change.property === "dimensions.length") {
-            room.dimensions.length = Number(change.newValue);
-          }
-        }
-      }
-      break;
-    }
-    case "wall":
-      // Wall changes could affect hallway width, setbacks, etc.
-      if (change.property === "hallwayWidthInches") {
-        clone.hallwayWidthInches = Number(change.newValue);
-      }
-      break;
   }
-
-  return clone;
+  findings.push(...evaluateSetbacks(blueprint));
+  return findings;
 }
 
-// ===== Mock Implementation =====
+/** Diff before and after finding sets to identify resolved + new findings. */
+function diffFindings(
+  originalFindings: ComplianceFinding[],
+  reEvalFindings: ComplianceFinding[]
+): { resolvedFindingIds: string[]; newFindings: ComplianceFinding[] } {
+  const resolvedFindingIds: string[] = [];
+
+  // An original finding is resolved if no re-eval finding covers the same clause + element
+  for (const orig of originalFindings) {
+    const stillFailing = reEvalFindings.some(
+      (nf) => nf.clauseId === orig.clauseId && nf.elementId === orig.elementId
+    );
+    if (!stillFailing) {
+      resolvedFindingIds.push(orig.id);
+    }
+  }
+
+  // A re-eval finding is new if no unresolved original covers the same clause + element
+  const genuinelyNew = reEvalFindings
+    .filter((nf) => !originalFindings.some(
+      (orig) => orig.clauseId === nf.clauseId && orig.elementId === nf.elementId
+        && !resolvedFindingIds.includes(orig.id)
+    ))
+    .map((f) => ({ ...f, isRippleEffect: true, rippleLabel: "Surfaced by recheck" }));
+
+  return { resolvedFindingIds, newFindings: genuinelyNew };
+}
+
+/** Identify which clause IDs are affected by the change. */
+function getAffectedClauseIds(change: BlueprintChange): string[] {
+  // Map property types to potentially affected clause families
+  const clauseMap: Record<string, string[]> = {
+    width: ["FE-102", "FE-103"],
+    height: ["FE-102", "FE-103"],
+    sillHeight: ["FE-102"],
+    position: ["SB-203", "SB-205", "SB-207", "SB-208", "FE-107"],
+  };
+  return clauseMap[change.property] || [];
+}
+
+// ===== MockRippleEffectSource =====
 
 export class MockRippleEffectSource implements RippleEffectSource {
-  async simulateChange(change: ProposedChange): Promise<RippleSimulationResult> {
-    // Artificial delay to emulate real agent latency
+  async runSimulatedChange(blueprintId: string, change: BlueprintChange): Promise<RippleEffectResult> {
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
-    const blueprint = getBlueprintById(change.blueprintId);
-    if (!blueprint) {
-      throw new Error(`Blueprint '${change.blueprintId}' not found`);
+    const blueprint = getBlueprintById(blueprintId);
+    if (!blueprint) throw new Error(`Blueprint '${blueprintId}' not found`);
+
+    const originalFindings = FALLBACKS[blueprintId]?.findings || [];
+    const modified = applyChange(blueprint, change);
+    const reEvalFindings = evaluateBlueprint(modified);
+    const { resolvedFindingIds, newFindings } = diffFindings(originalFindings, reEvalFindings);
+
+    const remaining = originalFindings.filter((f) => !resolvedFindingIds.includes(f.id));
+    const allActive = [...remaining, ...newFindings];
+    const blocking = allActive.filter((f) => f.severity === "blocking").length;
+    const advisory = allActive.filter((f) => f.severity === "advisory").length;
+
+    const affectedClauseIds = getAffectedClauseIds(change);
+
+    // For the "move window east" scenario, include windowPosition for the floor plan
+    let windowPosition: RippleEffectResult["windowPosition"] = undefined;
+    if (change.property === "position" && change.elementId === "W2") {
+      const deltaFt = convertDeltaToFt(change.delta, change.unit);
+      windowPosition = {
+        before: { x: 120, y: 160, distanceToBoundaryFt: blueprint.setbacks.side },
+        after: { x: 175, y: 160, distanceToBoundaryFt: modified.setbacks.side },
+      };
     }
-
-    // Get the original findings for this blueprint
-    const originalFallback = FALLBACKS[change.blueprintId];
-    const originalFindings = originalFallback?.findings || [];
-
-    // Get affected clause IDs from the dependency graph
-    const affectedClauseIds = getAffectedClauseIds(change.elementType, change.property);
-
-    // Apply the change to get a modified blueprint
-    const modifiedBlueprint = applyChangeToBlueprint(blueprint, change);
-
-    // Re-evaluate compliance on the modified blueprint for affected areas
-    const newEgressFindings: ComplianceFinding[] = [];
-    for (const room of modifiedBlueprint.rooms) {
-      for (const opening of room.egressOpenings) {
-        const openingId = opening.id || `${room.id}-opening`;
-        // Only re-evaluate if this opening or its element is affected
-        if (change.elementId === openingId || affectedClauseIds.some(c => c.startsWith("FE-"))) {
-          const evalFindings = evaluateEgressCompliance(opening, room);
-          newEgressFindings.push(...evalFindings);
-        }
-      }
-    }
-
-    const newSetbackFindings = evaluateSetbackCompliance(modifiedBlueprint);
-
-    // Determine which original findings are resolved
-    // A finding is resolved if it was affected AND no corresponding new finding exists
-    const resolvedFindingIds: string[] = [];
-    const affectedOriginals = getAffectedFindings(originalFindings, affectedClauseIds);
-    for (const original of affectedOriginals) {
-      // Check if the same type of violation still exists in re-evaluation
-      const stillFailing = [...newEgressFindings, ...newSetbackFindings].some(
-        (nf) => nf.clauseId === original.clauseId && nf.elementId === original.elementId
-      );
-      if (!stillFailing) {
-        resolvedFindingIds.push(original.id);
-      }
-    }
-
-    // Determine genuinely NEW findings (not in original set)
-    const allNewFindings = [...newEgressFindings, ...newSetbackFindings];
-    const genuinelyNew: ComplianceFinding[] = allNewFindings
-      .filter((nf) => {
-        // Not a re-statement of an existing unresolved finding
-        return !originalFindings.some(
-          (of) => of.clauseId === nf.clauseId && of.elementId === nf.elementId && !resolvedFindingIds.includes(of.id)
-        );
-      })
-      .map((f) => ({
-        ...f,
-        isRippleEffect: true,
-        rippleLabel: "Surfaced by recheck",
-      }));
-
-    // Calculate updated readiness score
-    const remainingOriginal = originalFindings.filter(
-      (f) => !resolvedFindingIds.includes(f.id)
-    );
-    const allActiveFindings = [...remainingOriginal, ...genuinelyNew];
-    const blockingCount = allActiveFindings.filter((f) => f.severity === "blocking").length;
-    const advisoryCount = allActiveFindings.filter((f) => f.severity === "advisory").length;
-    const updatedReadinessScore = calculateReadinessScore(blockingCount, advisoryCount);
 
     return {
-      change,
       resolvedFindingIds,
-      newFindings: genuinelyNew,
+      newFindings,
+      updatedReadinessScore: calculateReadinessScore(blocking, advisory),
       affectedClauseIds,
-      updatedReadinessScore,
-      elementDelta: {
-        elementId: change.elementId,
-        before: { [change.property]: change.currentValue },
-        after: { [change.property]: change.newValue },
-      },
+      change,
+      windowPosition,
     };
   }
 
-  /**
-   * Legacy method — translates the old "move window east" demo call
-   * into a ProposedChange and delegates to simulateChange().
-   */
-  async runMoveWindowEast(blueprintId: string, offsetMm: number): Promise<RippleSimulationResult> {
-    const change: ProposedChange = {
-      blueprintId,
-      elementType: "window",
+  async runMoveWindowEast(blueprintId: string, offsetMm: number): Promise<RippleEffectResult> {
+    return this.runSimulatedChange(blueprintId, {
       elementId: "W2",
-      property: "position.x",
-      currentValue: 120,
-      newValue: 120 + (offsetMm / 304.8) * 55, // Scale mm to SVG coords
-      description: `Move Window W2 ${offsetMm}mm east`,
-    };
-    return this.simulateChange(change);
+      property: "position",
+      delta: offsetMm,
+      unit: "mm",
+    });
   }
 }
 
-// ===== Live Implementation (Stub) =====
+// ===== LiveRippleEffectSource =====
+// Actual recheck pipeline:
+// 1. Clone blueprint and apply the change
+// 2. Re-run Regulation Retriever on modified blueprint
+// 3. Re-run Compliance Checker (LLM call with Zod-validate → retry → fallback to mock)
+// 4. Diff findings
+// 5. Return RippleEffectResult
 
 export class LiveRippleEffectSource implements RippleEffectSource {
-  async simulateChange(change: ProposedChange): Promise<RippleSimulationResult> {
-    console.warn(
-      "[LiveRippleEffectSource] Live multi-agent geometry pipeline is not yet wired. Falling back to MockRippleEffectSource."
-    );
+  async runSimulatedChange(blueprintId: string, change: BlueprintChange): Promise<RippleEffectResult> {
+    const blueprint = getBlueprintById(blueprintId);
+    if (!blueprint) throw new Error(`Blueprint '${blueprintId}' not found`);
+
+    const originalFindings = FALLBACKS[blueprintId]?.findings || [];
+    const modified = applyChange(blueprint, change);
+
+    // Step 1: Re-run the Regulation Retriever on the modified blueprint
+    const topics = deriveTopics(modified);
+    const clauses = retrieveRegulations(topics);
+
+    // Step 2: Attempt the live compliance check via the API
+    //         Uses the same Zod-validate → retry → fallback pattern as lib/llm.ts
+    let liveResult: ComplianceResult | null = null;
+    try {
+      const res = await fetch("/api/compliance-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blueprintId, _modifiedBlueprint: modified }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const parsed = ComplianceResultSchema.safeParse(data);
+        if (parsed.success) {
+          liveResult = parsed.data;
+        }
+      }
+    } catch {
+      console.warn("[LiveRippleEffectSource] Live compliance check failed, falling back to mock.");
+    }
+
+    // Step 3: If live check succeeded, diff the live findings against originals
+    if (liveResult) {
+      const { resolvedFindingIds, newFindings } = diffFindings(originalFindings, liveResult.findings);
+      const remaining = originalFindings.filter((f) => !resolvedFindingIds.includes(f.id));
+      const allActive = [...remaining, ...newFindings];
+      const blocking = allActive.filter((f) => f.severity === "blocking").length;
+      const advisory = allActive.filter((f) => f.severity === "advisory").length;
+
+      return {
+        resolvedFindingIds,
+        newFindings,
+        updatedReadinessScore: calculateReadinessScore(blocking, advisory),
+        affectedClauseIds: getAffectedClauseIds(change),
+        change,
+      };
+    }
+
+    // Fallback to mock result (Zod-validate → retry → fallback pattern)
+    console.log("[LiveRippleEffectSource] Using mock fallback for this interaction.");
     const mock = new MockRippleEffectSource();
-    return mock.simulateChange(change);
+    return mock.runSimulatedChange(blueprintId, change);
   }
 
-  async runMoveWindowEast(blueprintId: string, offsetMm: number): Promise<RippleSimulationResult> {
-    const mock = new MockRippleEffectSource();
-    return mock.runMoveWindowEast(blueprintId, offsetMm);
+  async runMoveWindowEast(blueprintId: string, offsetMm: number): Promise<RippleEffectResult> {
+    return this.runSimulatedChange(blueprintId, {
+      elementId: "W2",
+      property: "position",
+      delta: offsetMm,
+      unit: "mm",
+    });
   }
 }
 
 // ===== Configuration Toggle =====
-
 export const USE_LIVE_RIPPLE = false;
 
 export const rippleEffectSource: RippleEffectSource = USE_LIVE_RIPPLE

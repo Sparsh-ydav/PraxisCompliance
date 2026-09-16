@@ -5,8 +5,12 @@ import type { QueuedApplication, ApplicationStatus } from "@/fixtures/reviewer-q
 import { QUEUED_APPLICATIONS, sortBySeverity } from "@/fixtures/reviewer-queue";
 import FindingCard from "@/app/components/FindingCard";
 import ApprovalReadinessGauge, { calculateReadinessScore } from "@/app/components/ApprovalReadinessGauge";
+import AuditLog from "@/app/components/AuditLog";
+import JurisdictionMemoryPanel from "@/app/components/JurisdictionMemoryPanel";
+import { logAuditEvent } from "@/lib/audit-trail";
 
 export default function ReviewerDashboard() {
+  const [activeSubTab, setActiveSubTab] = useState<"queue" | "audit" | "jurisdiction">("queue");
   const [applications, setApplications] = useState<QueuedApplication[]>(sortBySeverity(QUEUED_APPLICATIONS));
   const [selectedApp, setSelectedApp] = useState<QueuedApplication | null>(null);
   const [draftLetter, setDraftLetter] = useState<string>("");
@@ -35,6 +39,9 @@ export default function ReviewerDashboard() {
   }
 
   function updateStatus(appId: string, newStatus: ApplicationStatus, wasEdited: boolean = false) {
+    const targetApp = applications.find((a) => a.id === appId);
+    const targetName = targetApp ? `${targetApp.applicantName} (${targetApp.caseNumber})` : appId;
+
     setApplications((prev) =>
       prev.map((app) => (app.id === appId ? { ...app, status: newStatus } : app))
     );
@@ -42,11 +49,29 @@ export default function ReviewerDashboard() {
     if (newStatus === "approved") {
       if (wasEdited) {
         setEditedBeforeApproval((prev) => prev + 1);
+        logAuditEvent(
+          "reviewer_approved",
+          "Reviewer",
+          targetName,
+          `Approved application after editing draft correction letter.`
+        );
       } else {
         setApprovedAsIs((prev) => prev + 1);
+        logAuditEvent(
+          "reviewer_approved",
+          "Reviewer",
+          targetName,
+          `Signed off and issued approval without edits.`
+        );
       }
     } else if (newStatus === "rejected") {
       setRejected((prev) => prev + 1);
+      logAuditEvent(
+        "reviewer_rejected",
+        "Reviewer",
+        targetName,
+        `Application rejected by municipal plan reviewer.`
+      );
     }
 
     setSelectedApp(null);
@@ -56,154 +81,233 @@ export default function ReviewerDashboard() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Reviewer Dashboard</h1>
-        <div className="text-sm bg-slate-100 px-4 py-2 rounded">
-          <span className="font-semibold">Session Stats:</span> {approvedAsIs} signed off as-is, {editedBeforeApproval} edited before sign-off, {rejected} rejected
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Reviewer Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Maplewood Township Department of Code Enforcement & Plan Examination
+          </p>
+        </div>
+        <div className="text-xs bg-slate-100 px-4 py-2.5 rounded-lg border border-slate-200">
+          <span className="font-semibold text-slate-700">Session Actions:</span>{" "}
+          <span className="text-emerald-700 font-bold">{approvedAsIs}</span> approved as-is,{" "}
+          <span className="text-blue-700 font-bold">{editedBeforeApproval}</span> edited & approved,{" "}
+          <span className="text-rose-700 font-bold">{rejected}</span> rejected
         </div>
       </div>
 
-      {!selectedApp ? (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">
-            Pending Applications ({pendingApps.length})
-          </h2>
+      {/* Navigation Sub-Tabs */}
+      <div className="flex items-center gap-2 mb-6 border-b border-slate-200">
+        <button
+          onClick={() => {
+            setActiveSubTab("queue");
+            setSelectedApp(null);
+          }}
+          className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 cursor-pointer ${
+            activeSubTab === "queue"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          Application Queue ({pendingApps.length})
+        </button>
+        <button
+          onClick={() => {
+            setActiveSubTab("audit");
+            setSelectedApp(null);
+          }}
+          className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 cursor-pointer flex items-center gap-1.5 ${
+            activeSubTab === "audit"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span>📋</span>
+          <span>Audit Trail</span>
+        </button>
+        <button
+          onClick={() => {
+            setActiveSubTab("jurisdiction");
+            setSelectedApp(null);
+          }}
+          className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 cursor-pointer flex items-center gap-1.5 ${
+            activeSubTab === "jurisdiction"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span>🏛️</span>
+          <span>Jurisdiction Memory</span>
+        </button>
+      </div>
 
-          <div className="space-y-3">
-            {pendingApps.map((app) => (
-              <div
-                key={app.id}
-                onClick={() => loadApplication(app)}
-                className="bg-white p-4 border rounded shadow-sm hover:shadow-md cursor-pointer transition-shadow"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg">{app.applicantName}</h3>
-                    <p className="text-sm text-muted">{app.projectAddress}</p>
-                    <p className="text-xs text-muted mt-1">
-                      {app.projectType} • Filed {app.submittedDate}
-                    </p>
+      {/* Tab 1: Audit Trail */}
+      {activeSubTab === "audit" && <AuditLog />}
+
+      {/* Tab 2: Jurisdiction Memory */}
+      {activeSubTab === "jurisdiction" && <JurisdictionMemoryPanel />}
+
+      {/* Tab 3: Application Queue & Letter Drafting */}
+      {activeSubTab === "queue" && (
+        <>
+          {!selectedApp ? (
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-slate-800">
+                Pending Plan Submissions ({pendingApps.length})
+              </h2>
+
+              <div className="space-y-3">
+                {pendingApps.map((app) => (
+                  <div
+                    key={app.id}
+                    onClick={() => loadApplication(app)}
+                    className="bg-white p-4 border border-slate-200 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-shadow"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-900">{app.applicantName}</h3>
+                        <p className="text-sm text-slate-600">{app.projectAddress}</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {app.projectType} • Case #{app.caseNumber} • Filed {app.submittedDate}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                            app.severity === "high"
+                              ? "bg-rose-100 text-rose-800 border border-rose-200"
+                              : app.severity === "medium"
+                              ? "bg-amber-100 text-amber-800 border border-amber-200"
+                              : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                          }`}
+                        >
+                          {app.severity.toUpperCase()} RISK
+                        </span>
+                        <p className="text-xs mt-2 text-slate-500">
+                          {app.blockingCount > 0 && `${app.blockingCount} blocking`}
+                          {app.blockingCount > 0 && app.advisoryCount > 0 && ", "}
+                          {app.advisoryCount > 0 && `${app.advisoryCount} advisory`}
+                          {app.blockingCount === 0 && app.advisoryCount === 0 && "No issues"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                        app.severity === "high"
-                          ? "bg-blocking text-white"
-                          : app.severity === "medium"
-                          ? "bg-advisory text-white"
-                          : "bg-success text-white"
-                      }`}
-                    >
-                      {app.severity.toUpperCase()}
-                    </span>
-                    <p className="text-xs mt-2 text-muted">
-                      {app.blockingCount > 0 && `${app.blockingCount} blocking`}
-                      {app.blockingCount > 0 && app.advisoryCount > 0 && ", "}
-                      {app.advisoryCount > 0 && `${app.advisoryCount} advisory`}
-                      {app.blockingCount === 0 && app.advisoryCount === 0 && "No issues"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div>
-          <button
-            onClick={() => setSelectedApp(null)}
-            className="mb-4 text-accent hover:underline"
-          >
-            ← Back to Queue
-          </button>
-
-          <div className="bg-white p-6 rounded shadow mb-6">
-            <h2 className="text-2xl font-bold mb-2">{selectedApp.applicantName}</h2>
-            <p className="text-muted mb-4">
-              {selectedApp.projectAddress} • Case #{selectedApp.caseNumber}
-            </p>
-
-            {/* Approval Readiness Score Gauge */}
-            <ApprovalReadinessGauge
-              score={calculateReadinessScore(selectedApp.blockingCount, selectedApp.advisoryCount)}
-              blockingCount={selectedApp.blockingCount}
-              advisoryCount={selectedApp.advisoryCount}
-            />
-
-            <h3 className="font-semibold text-lg mb-3">Findings ({selectedApp.findings.length})</h3>
-            {selectedApp.findings.length > 0 ? (
-              <div className="space-y-3 mb-6">
-                {selectedApp.findings.map((finding) => (
-                  <FindingCard key={finding.id} finding={finding} />
                 ))}
               </div>
-            ) : (
-              <p className="text-success font-bold mb-6">✓ No issues detected - Application complies with all requirements.</p>
-            )}
-
-            <h3 className="font-semibold text-lg mb-3">Draft Correction Letter</h3>
-            {loading ? (
-              <p>Loading draft letter...</p>
-            ) : isEditing ? (
-              <textarea
-                value={draftLetter}
-                onChange={(e) => setDraftLetter(e.target.value)}
-                className="w-full h-96 p-4 border rounded font-mono text-sm"
-              />
-            ) : (
-              <pre className="bg-slate-50 p-4 rounded border text-sm whitespace-pre-wrap font-mono">
-                {draftLetter}
-              </pre>
-            )}
-
-            <div className="mt-6 flex gap-3">
-              {!isEditing ? (
-                <>
-                  <button
-                    onClick={() => updateStatus(selectedApp.id, "approved", false)}
-                    className="px-6 py-2 bg-success text-white rounded font-bold hover:bg-green-700 cursor-pointer"
-                  >
-                    Sign Off &amp; Issue
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-accent text-white rounded font-bold hover:bg-blue-700 cursor-pointer"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm("Reject this application?")) {
-                        updateStatus(selectedApp.id, "rejected");
-                      }
-                    }}
-                    className="px-6 py-2 bg-blocking text-white rounded font-bold hover:bg-rose-700 cursor-pointer"
-                  >
-                    Reject
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      updateStatus(selectedApp.id, "approved", true);
-                    }}
-                    className="px-6 py-2 bg-success text-white rounded font-bold hover:bg-green-700 cursor-pointer"
-                  >
-                    Sign Off Edited Letter
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="px-6 py-2 bg-slate-400 text-white rounded font-bold hover:bg-slate-500 cursor-pointer"
-                  >
-                    Cancel Edit
-                  </button>
-                </>
-              )}
             </div>
-          </div>
-        </div>
+          ) : (
+            <div>
+              <button
+                onClick={() => setSelectedApp(null)}
+                className="mb-4 text-blue-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                ← Back to Queue
+              </button>
+
+              <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-6">
+                <h2 className="text-2xl font-bold mb-1 text-slate-900">{selectedApp.applicantName}</h2>
+                <p className="text-slate-500 text-sm mb-4">
+                  {selectedApp.projectAddress} • Case #{selectedApp.caseNumber}
+                </p>
+
+                {/* Approval Readiness Score Gauge */}
+                <ApprovalReadinessGauge
+                  score={calculateReadinessScore(selectedApp.blockingCount, selectedApp.advisoryCount)}
+                  blockingCount={selectedApp.blockingCount}
+                  advisoryCount={selectedApp.advisoryCount}
+                />
+
+                <h3 className="font-semibold text-lg mb-3 mt-6 text-slate-900">
+                  Findings ({selectedApp.findings.length})
+                </h3>
+                {selectedApp.findings.length > 0 ? (
+                  <div className="space-y-3 mb-6">
+                    {selectedApp.findings.map((finding) => (
+                      <FindingCard key={finding.id} finding={finding} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-emerald-700 font-bold mb-6 bg-emerald-50 p-3 rounded border border-emerald-200">
+                    ✓ No issues detected — Application complies with all requirements.
+                  </p>
+                )}
+
+                <h3 className="font-semibold text-lg mb-3 text-slate-900">Draft Correction Letter</h3>
+                {loading ? (
+                  <div className="p-8 text-center text-slate-500 bg-slate-50 rounded border">
+                    Generating official correction letter draft…
+                  </div>
+                ) : isEditing ? (
+                  <textarea
+                    value={draftLetter}
+                    onChange={(e) => setDraftLetter(e.target.value)}
+                    className="w-full h-96 p-4 border rounded font-mono text-sm bg-white"
+                  />
+                ) : (
+                  <pre className="bg-slate-50 p-4 rounded border text-sm whitespace-pre-wrap font-mono text-slate-800">
+                    {draftLetter}
+                  </pre>
+                )}
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {!isEditing ? (
+                    <>
+                      <button
+                        onClick={() => updateStatus(selectedApp.id, "approved", false)}
+                        className="px-6 py-2.5 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                      >
+                        Sign Off &amp; Issue
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          logAuditEvent(
+                            "reviewer_edited",
+                            "Reviewer",
+                            selectedApp.caseNumber,
+                            "Reviewer opened draft correction letter for manual edits."
+                          );
+                        }}
+                        className="px-6 py-2.5 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"
+                      >
+                        Edit Letter
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm("Reject this application?")) {
+                            updateStatus(selectedApp.id, "rejected");
+                          }
+                        }}
+                        className="px-6 py-2.5 bg-rose-600 text-white rounded font-bold hover:bg-rose-700 transition-colors shadow-sm cursor-pointer"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          updateStatus(selectedApp.id, "approved", true);
+                        }}
+                        className="px-6 py-2.5 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                      >
+                        Sign Off Edited Letter
+                      </button>
+                      <button
+                        onClick={() => setIsEditing(false)}
+                        className="px-6 py-2.5 bg-slate-400 text-white rounded font-bold hover:bg-slate-500 transition-colors shadow-sm cursor-pointer"
+                      >
+                        Cancel Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
