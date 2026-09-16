@@ -22,6 +22,13 @@ export interface EgressOpening {
   operableFromInside: boolean;
 }
 
+export interface SpatialElement {
+  elementId: string;        // matches EgressOpening.id, Room.id, etc.
+  type: "room" | "window" | "door" | "wall" | "setback";
+  bounds: { x: number; y: number; width: number; height: number };
+  label: string;
+}
+
 export interface Blueprint {
   id: string;
   label: string;
@@ -42,6 +49,10 @@ export interface Blueprint {
   hallwayWidthInches: number;
   rooms: Room[];
   notes: string;
+  spatialMetadata?: {
+    viewBox: { width: number; height: number };
+    elements: SpatialElement[];
+  };
 }
 
 // Blueprint 1: CLEAN — passes all checks
@@ -95,6 +106,15 @@ export const BLUEPRINT_CLEAN: Blueprint = {
     },
   ],
   notes: "Standard rear addition, no issues expected. Smoke alarms to be installed per FE-109.",
+  spatialMetadata: {
+    viewBox: { width: 320, height: 260 },
+    elements: [
+      { elementId: "rm-001", type: "room", bounds: { x: 40, y: 40, width: 150, height: 120 }, label: "Addition Bedroom (12' × 14')" },
+      { elementId: "rm-002", type: "room", bounds: { x: 40, y: 160, width: 100, height: 70 }, label: "Addition Bathroom (8' × 10')" },
+      { elementId: "W1", type: "window", bounds: { x: 90, y: 37, width: 30, height: 8 }, label: "Window W1 (north wall)" },
+      { elementId: "D1", type: "door", bounds: { x: 190, y: 80, width: 8, height: 24 }, label: "Primary Exit Door" },
+    ],
+  },
 };
 
 // Blueprint 2: BLOCKING ISSUE — clear egress violation in basement bedroom
@@ -139,6 +159,14 @@ export const BLUEPRINT_BLOCKING: Blueprint = {
     },
   ],
   notes: "Basement conversion. Existing window well in place but window itself needs replacement. Sill height also exceeds maximum allowed.",
+  spatialMetadata: {
+    viewBox: { width: 320, height: 220 },
+    elements: [
+      { elementId: "rm-003", type: "room", bounds: { x: 40, y: 40, width: 190, height: 140 }, label: "Basement Bedroom (11' × 13')" },
+      { elementId: "W2", type: "window", bounds: { x: 120, y: 175, width: 30, height: 8 }, label: "Window W2 (south wall)" },
+      { elementId: "setback-side", type: "setback", bounds: { x: 230, y: 30, width: 2, height: 170 }, label: "East Property Line" },
+    ],
+  },
 };
 
 // Blueprint 3: ADVISORY ISSUE — borderline side setback
@@ -172,6 +200,13 @@ export const BLUEPRINT_ADVISORY: Blueprint = {
     },
   ],
   notes: "Side setback is 5 ft 8 in. Historical pattern shows reviewers routinely grant administrative waivers for encroachments under 6 inches. Applicant should be advised to request waiver at time of filing.",
+  spatialMetadata: {
+    viewBox: { width: 320, height: 260 },
+    elements: [
+      { elementId: "rm-004", type: "room", bounds: { x: 40, y: 40, width: 130, height: 120 }, label: "Kitchen Extension (10' × 14')" },
+      { elementId: "setback-side", type: "setback", bounds: { x: 172, y: 30, width: 2, height: 170 }, label: "Side Property Line (5.67 ft)" },
+    ],
+  },
 };
 
 export const BLUEPRINTS: Blueprint[] = [
