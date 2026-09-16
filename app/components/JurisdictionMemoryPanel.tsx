@@ -20,7 +20,7 @@ export default function JurisdictionMemoryPanel() {
           <div className="flex items-center gap-2">
             <span className="text-xl">🏛️</span>
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-              Jurisdiction Memory — Maplewood Township
+              Jurisdiction Memory — National Building Code of India (NBC 2016)
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-mono">
               {LEARNED_PATTERNS.length} Empirical Patterns

@@ -27,43 +27,43 @@ export interface RegulationConflict {
 export const AUTHORED_CONFLICTS: RegulationConflict[] = [
   {
     id: "conf-fe107-sb207",
-    title: "Egress Window Well Projection vs. Zoning Projections Allowance",
+    title: "Egress Window Well Projection vs. Side Open Space Projections Allowance",
     clauseA: {
       id: "FE-107",
-      section: "Section 101.7",
-      requirement: "Mandates that below-grade egress window wells maintain a minimum horizontal projection of 36 inches (3.0 ft) from the building face.",
+      section: "NBC 2016 Part 4, Clause 4.10.3 & Part 3, Clause 8.2.6",
+      requirement: "Mandates that below-grade emergency escape window wells maintain a minimum horizontal projection of 900 mm (36 inches / 3.0 ft) from the building face.",
     },
     clauseB: {
       id: "SB-207",
-      section: "Section 201.7",
-      requirement: "Limits uncounted architectural projections into required setbacks to a maximum of 24 inches (2.0 ft).",
+      section: "NBC 2016 Part 3, Clause 8.4.1",
+      requirement: "Limits uncounted architectural projections into required open spaces/setbacks to a maximum of 0.6 m (600 mm / 24 inches).",
     },
     conflictDescription:
-      "Statutory contradiction: Fire Egress Section 101.7 mandates a minimum 36-inch exterior projection for basement egress wells, while Zoning Section 201.7 strictly prohibits projections exceeding 24 inches into the side yard setback without a variance. On any side wall where setback clearance is less than 9 feet, complying with Fire Egress guarantees a Zoning setback encroachment violation.",
-    affectedScenario: "Basement bedroom conversions or additions featuring below-grade egress window wells facing a side property boundary (e.g. Blueprint B).",
+      "Statutory contradiction: Fire & Life Safety (NBC 2016 Part 4, Cl 4.10.3) mandates a minimum 900 mm (36-inch) exterior projection for basement egress wells, while Development Control (NBC 2016 Part 3, Cl 8.4.1) strictly limits projections exceeding 600 mm (24 inches) into the side yard open space without a variance. On any side wall where setback clearance is constrained, complying with Life Safety guarantees a side open space encroachment violation.",
+    affectedScenario: "Basement habitable room conversions or additions featuring below-grade egress window wells facing a side property boundary (e.g. Blueprint B).",
     severity: "conflict_human_review",
     recommendedResolution:
-      "Route to Chief Building Official / Zoning Officer for an administrative harmonization ruling. Per NJ UCC precedence, Life Safety code (FE-107) supersedes local zoning dimensional limits (SB-207).",
+      "Route to Municipal Chief Town Planner / Chief Building Official for administrative harmonization under NBC 2016 Part 2, Clause 12.5. By statutory precedence, Life Safety requirements (Part 4) take precedence over general projection limits (Part 3).",
   },
   {
     id: "conf-fe103-fe102",
-    title: "Ground Floor Area Reduction vs. Minimum Dimension Calculation",
+    title: "Ventilation Floor Area Ratio vs. Minimum Net Clear Egress Dimensions",
     clauseA: {
       id: "FE-102",
-      section: "Section 101.2",
-      requirement: "Minimum net clear opening width of 20 inches and minimum height of 24 inches (product = 3.33 sq ft minimum, but mandates 5.7 sq ft total net clear area).",
+      section: "NBC 2016 Part 4, Clause 4.10 & Part 8 Sec 1, Clause 9.11.2",
+      requirement: "Minimum net clear opening width of 500 mm (20\") and height of 600 mm (24\"), with minimum 0.53 m² (5.7 sq ft) total net clear opening area.",
     },
     clauseB: {
       id: "FE-103",
-      section: "Section 101.3",
-      requirement: "Permits ground-floor net clear area reduction to 5.0 sq ft while citing 20-inch width and 24-inch height.",
+      section: "NBC 2016 Part 8 Sec 1, Clause 9.11.1",
+      requirement: "Natural ventilation openings must aggregate to at least 10% of room floor area, with ground-floor escape opening reduced area of 0.46 m² (5.0 sq ft).",
     },
     conflictDescription:
-      "Mathematical ambiguity: A window meeting the minimum dimensions (20\" × 24\" = 480 sq in = 3.33 sq ft) fails both the 5.7 sq ft and 5.0 sq ft total area thresholds, requiring applicants to provide either 20\" × 36\" or 24\" × 30\" to achieve the aggregate area.",
-    affectedScenario: "First-story bedroom additions specifying minimal 20\" × 24\" manufactured sashes.",
+      "Mathematical ambiguity: A window meeting the minimum physical dimensions (500 mm × 600 mm = 0.30 m² / 3.23 sq ft) fails both the 0.53 m² (5.7 sq ft) egress threshold and the 10% room floor area ventilation requirement, requiring either 500 mm × 1060 mm or 600 mm × 885 mm opening to satisfy aggregate area.",
+    affectedScenario: "Habitable bedroom additions specifying minimal manufactured sashes.",
     severity: "conflict_human_review",
     recommendedResolution:
-      "Staff clarification issued in plan check: Inform applicant that minimum dimensions and minimum total net clear area are compound requirements.",
+      "Staff clarification issued during plan scrutiny: Inform applicant that minimum linear dimensions and aggregate net clear area/ventilation ratio are compound requirements.",
   },
 ];
 

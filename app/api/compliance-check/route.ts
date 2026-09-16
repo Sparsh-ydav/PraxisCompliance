@@ -68,7 +68,7 @@ function buildCompliancePrompt(
     )
     .join("\n\n");
 
-  return `You are a building permit compliance checker for Maplewood Township. Analyze the submitted blueprint against the regulation clauses and historical reviewer patterns below. Return ONLY valid JSON matching the schema exactly.
+  return `You are a building permit compliance checker operating under the National Building Code of India (NBC 2016). Analyze the submitted blueprint against the regulation clauses and historical reviewer patterns below. Return ONLY valid JSON matching the schema exactly.
 
 ## Blueprint Data
 ${JSON.stringify(blueprint, null, 2)}

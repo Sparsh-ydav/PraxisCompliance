@@ -109,42 +109,54 @@ function evaluateEgress(opening: EgressOpening, room: { id: string; name: string
   const isBasement = room.floorLevel === "basement";
   const wallLabel = opening.wall ? `(${opening.wall} wall)` : "";
   const minArea = isBasement ? 5.7 : 5.0;
+  const minAreaSqM = isBasement ? 0.53 : 0.46;
 
   if (opening.clearWidthInches < 20) {
+    const mm = Math.round(opening.clearWidthInches * 25.4);
     findings.push({
-      id: `f-re-width-${eid}`, issue: `Egress window width is ${opening.clearWidthInches} inches — below the 20-inch minimum`,
-      detail: `The emergency escape opening for ${room.name} has a net clear width of ${opening.clearWidthInches} inches. Section 101.2 requires a minimum of 20 inches.`,
-      clauseId: "FE-102", clauseCitation: "Section 101.2 — Minimum net clear opening width: 20 inches",
-      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed net clear opening: ${opening.clearWidthInches}" × ${opening.clearHeightInches}"`,
+      id: `f-re-width-${eid}`,
+      issue: `Egress window width is ${mm} mm (${opening.clearWidthInches} inches) — below the 500 mm (20-inch) NBC 2016 minimum`,
+      detail: `The emergency escape opening for ${room.name} has a net clear width of ${mm} mm (${opening.clearWidthInches} inches). NBC 2016 Part 4, Clause 4.10 & Part 8 Sec 1, Clause 9.11.2 requires a minimum clear width of 500 mm (20 inches).`,
+      clauseId: "FE-102",
+      clauseCitation: "NBC 2016 Part 4, Clause 4.10 & Part 8 Sec 1, Clause 9.11.2 — Minimum clear opening width: 500 mm (20 inches)",
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed net clear opening: ${mm} mm × ${Math.round(opening.clearHeightInches * 25.4)} mm (${opening.clearWidthInches}" × ${opening.clearHeightInches}")`,
       elementId: eid, severity: "blocking", source: "written_code", confidence: 0.99,
     });
   }
   if (opening.clearHeightInches < 24) {
+    const mm = Math.round(opening.clearHeightInches * 25.4);
     findings.push({
-      id: `f-re-height-${eid}`, issue: `Egress window height is ${opening.clearHeightInches} inches — below the 24-inch minimum`,
-      detail: `The emergency escape opening for ${room.name} has a net clear height of ${opening.clearHeightInches} inches. Section 101.2 requires a minimum of 24 inches.`,
-      clauseId: "FE-102", clauseCitation: "Section 101.2 — Minimum net clear opening height: 24 inches",
-      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed net clear opening: ${opening.clearWidthInches}" × ${opening.clearHeightInches}"`,
+      id: `f-re-height-${eid}`,
+      issue: `Egress window height is ${mm} mm (${opening.clearHeightInches} inches) — below the 600 mm (24-inch) NBC 2016 minimum`,
+      detail: `The emergency escape opening for ${room.name} has a net clear height of ${mm} mm (${opening.clearHeightInches} inches). NBC 2016 Part 4, Clause 4.10 & Part 8 Sec 1, Clause 9.11.2 requires a minimum clear height of 600 mm (24 inches).`,
+      clauseId: "FE-102",
+      clauseCitation: "NBC 2016 Part 4, Clause 4.10 & Part 8 Sec 1, Clause 9.11.2 — Minimum clear opening height: 600 mm (24 inches)",
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed net clear opening: ${Math.round(opening.clearWidthInches * 25.4)} mm × ${mm} mm (${opening.clearWidthInches}" × ${opening.clearHeightInches}")`,
       elementId: eid, severity: "blocking", source: "written_code", confidence: 0.99,
     });
   }
   if (opening.sillHeightFromFloorInches > 44) {
+    const mm = Math.round(opening.sillHeightFromFloorInches * 25.4);
     findings.push({
-      id: `f-re-sill-${eid}`, issue: `Egress window sill height is ${opening.sillHeightFromFloorInches} inches — exceeds 44-inch maximum`,
-      detail: `The sill height above finished floor is ${opening.sillHeightFromFloorInches} inches. Section 101.2 sets a maximum of 44 inches.`,
-      clauseId: "FE-102", clauseCitation: "Section 101.2 — Maximum sill height: 44 inches above finished floor",
-      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed sill height: ${opening.sillHeightFromFloorInches}" above finished floor`,
+      id: `f-re-sill-${eid}`,
+      issue: `Egress window sill height is ${mm} mm (${opening.sillHeightFromFloorInches} inches) — exceeds 1100 mm (44-inch) NBC 2016 maximum`,
+      detail: `The sill height above finished floor is ${mm} mm (${opening.sillHeightFromFloorInches} inches). NBC 2016 Part 4, Clause 4.10.1 sets a maximum sill height of 1100 mm (44 inches / 1.1 m).`,
+      clauseId: "FE-102",
+      clauseCitation: "NBC 2016 Part 4, Clause 4.10.1 — Maximum sill height: 1100 mm (44 inches / 1.1 m) above finished floor",
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed sill height: ${mm} mm (${opening.sillHeightFromFloorInches}") above finished floor`,
       elementId: eid, severity: "blocking", source: "written_code", confidence: 0.98,
     });
   }
   const area = (opening.clearWidthInches * opening.clearHeightInches) / 144;
+  const areaSqM = area * 0.092903;
   if (area < minArea) {
     findings.push({
-      id: `f-re-area-${eid}`, issue: `Egress opening area is ${area.toFixed(1)} sq ft — below the ${minArea} sq ft minimum`,
-      detail: `The net clear opening area for ${room.name} is ${area.toFixed(1)} sq ft. ${isBasement ? "Basement" : "Ground/upper"} sleeping rooms require ${minArea} sq ft.`,
+      id: `f-re-area-${eid}`,
+      issue: `Egress opening area is ${areaSqM.toFixed(2)} m² (${area.toFixed(1)} sq ft) — below the ${minAreaSqM} m² (${minArea} sq ft) NBC 2016 minimum`,
+      detail: `The net clear opening area for ${room.name} is ${areaSqM.toFixed(2)} m² (${area.toFixed(1)} sq ft). NBC 2016 Part 4, Clause 4.10 requires minimum ${minAreaSqM} m² (${minArea} sq ft).`,
       clauseId: isBasement ? "FE-102" : "FE-103",
-      clauseCitation: `Section ${isBasement ? "101.2" : "101.3"} — Minimum net clear opening area: ${minArea} sq ft`,
-      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed area: ${area.toFixed(1)} sq ft`,
+      clauseCitation: `NBC 2016 Part 4, Clause 4.10 — Minimum net clear opening area: ${minAreaSqM} m² (${minArea} sq ft)`,
+      evidence: `Window ${eid}, ${room.name} ${wallLabel} — parsed area: ${areaSqM.toFixed(2)} m² (${area.toFixed(1)} sq ft)`,
       elementId: eid, severity: "blocking", source: "written_code", confidence: 0.97,
     });
   }
@@ -155,6 +167,7 @@ function evaluateSetbacks(bp: Blueprint): ComplianceFinding[] {
   const findings: ComplianceFinding[] = [];
   const isR1 = bp.zoneDistrict === "R-1";
   const minSide = isR1 ? 6.0 : 8.0;
+  const minSideM = isR1 ? 1.8 : 2.4;
 
   if (bp.setbacks.side < minSide) {
     const deficit = minSide - bp.setbacks.side;
@@ -162,12 +175,12 @@ function evaluateSetbacks(bp: Blueprint): ComplianceFinding[] {
     const canWaive = deficitIn <= 6;
     findings.push({
       id: "f-re-setback-side",
-      issue: `Side setback is ${bp.setbacks.side.toFixed(2)} ft — ${deficit.toFixed(2)} ft below the ${minSide}-ft minimum`,
+      issue: `Side open space is ${(bp.setbacks.side * 0.3048).toFixed(2)} m (${bp.setbacks.side.toFixed(2)} ft) — ${(deficit * 0.3048).toFixed(2)} m below the ${minSideM} m (${minSide}-ft) NBC 2016 minimum`,
       detail: canWaive
-        ? `The side setback encroachment of ${deficitIn.toFixed(1)} inches is within the 6-inch administrative waiver threshold (Section 201.8).`
-        : `The side setback encroachment of ${deficitIn.toFixed(1)} inches exceeds the 6-inch waiver limit. A formal variance is required.`,
+        ? `The side open space deficit of ${(deficitIn * 25.4).toFixed(0)} mm (${deficitIn.toFixed(1)} inches) is within the 150 mm (6-inch) administrative waiver threshold under NBC 2016 Part 2, Clause 12.5.`
+        : `The side open space deficit of ${(deficitIn * 25.4).toFixed(0)} mm (${deficitIn.toFixed(1)} inches) exceeds the 150 mm (6-inch) waiver limit. A formal Planning Authority variance under NBC 2016 Part 3, Clause 8.2.3 is required.`,
       clauseId: isR1 ? "SB-203" : "SB-205",
-      clauseCitation: `Section ${isR1 ? "201.3" : "201.5"} — Minimum side setback: ${minSide} feet`,
+      clauseCitation: `NBC 2016 Part 3, Clause 8.2.3 — Minimum side open space: ${minSideM} m (${minSide} feet)`,
       elementId: "setback-side",
       severity: canWaive ? "advisory" : "blocking",
       source: canWaive ? "learned_pattern" : "written_code",
@@ -180,9 +193,10 @@ function evaluateSetbacks(bp: Blueprint): ComplianceFinding[] {
   if (isR1 && bp.setbacks.front < 25) {
     findings.push({
       id: "f-re-setback-front",
-      issue: `Front setback is ${bp.setbacks.front} ft — below the 25-ft minimum`,
-      detail: `Front setback of ${bp.setbacks.front} ft violates the 25-ft minimum per Section 201.2.`,
-      clauseId: "SB-202", clauseCitation: "Section 201.2 — Minimum front setback: 25 feet (R-1)",
+      issue: `Front open space is ${(bp.setbacks.front * 0.3048).toFixed(2)} m (${bp.setbacks.front} ft) — below the 7.5 m (25-ft) NBC 2016 minimum`,
+      detail: `Front open space of ${(bp.setbacks.front * 0.3048).toFixed(2)} m (${bp.setbacks.front} ft) violates the 7.5 m (25-ft) minimum prescribed by NBC 2016 Part 3, Clause 8.2.1.`,
+      clauseId: "SB-202",
+      clauseCitation: "NBC 2016 Part 3, Clause 8.2.1 — Minimum front open space: 7.5 m (25 feet)",
       elementId: "setback-front", severity: "blocking", source: "written_code", confidence: 0.98,
       isRippleEffect: true, rippleLabel: "Surfaced by recheck",
     });

@@ -64,7 +64,7 @@ function buildReviewerLetterPrompt(application: ReturnType<typeof getApplication
     .map((f, i) => `${i + 1}. [${f.severity.toUpperCase()}] ${f.issue}\n   ${f.detail}\n   Citation: ${f.clauseCitation}`)
     .join("\n\n");
 
-  return `You are drafting a formal building permit correction letter for Maplewood Township Building Department. Generate a professional correction notice in the style of municipal building departments.
+  return `You are drafting a formal building permit correction letter under the National Building Code of India (NBC 2016) for the Municipal Corporation Department of Town Planning & Building Sanction. Generate a professional scrutiny objection notice in the style of municipal authorities.
 
 ## Application Details
 Case Number: ${application.caseNumber}
@@ -74,19 +74,19 @@ Project Type: ${application.projectType}
 Submitted: ${application.submittedDate}
 
 ## Compliance Findings (${application.findings.length} items)
-${findingsText || "No issues found - this application complies with all requirements. Prepare a compliance determination and permit authorization notice for reviewer sign-off."}
+${findingsText || "No issues found - this application complies with all NBC 2016 requirements. Prepare a compliance determination and building sanction order for reviewer sign-off."}
 
 ## Instructions
-Generate a formal notice for municipal plans examination that:
-1. Uses official letterhead format with "MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT" header
+Generate a formal notice for municipal plan scrutiny that:
+1. Uses official letterhead format with "MUNICIPAL CORPORATION TOWN PLANNING & BUILDING SANCTION DEPARTMENT" header
 2. Includes case number, applicant name, address, and date
 3. Has a formal salutation
-4. Lists each correction item with its section reference (if corrections needed)
-5. Uses bureaucratic but clear language
-6. Ends with resubmission instructions (if corrections needed) or examiner compliance determination and permit authorization notice (if clean)
-7. Signs off with "Sincerely, [Plan Reviewer Name], [Title]"
+4. Lists each objection/correction item with its NBC 2016 section reference (if corrections needed)
+5. Uses bureaucratic but clear statutory language
+6. Ends with resubmission instructions (if corrections needed) or examiner compliance determination and building sanction order (if clean)
+7. Signs off with "Sincerely, [Plan Reviewer Name], [Title]\nDepartment of Town Planning & Building Sanction"
 
-If there are NO findings, this should be a COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE for human reviewer sign-off, not a correction letter.
+If there are NO findings, this should be a COMPLIANCE DETERMINATION & BUILDING SANCTION ORDER for human reviewer sign-off, not a correction letter.
 
 Return ONLY valid JSON matching this exact schema:
 {
@@ -104,9 +104,9 @@ function generateGenericFallbackLetter(application: ReturnType<typeof getApplica
   const hasFindings = application.findings.length > 0;
 
   if (!hasFindings) {
-    return `MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT
+    return `MUNICIPAL CORPORATION TOWN PLANNING & BUILDING SANCTION DEPARTMENT
 
-COMPLIANCE DETERMINATION & PERMIT AUTHORIZATION NOTICE
+COMPLIANCE DETERMINATION & BUILDING SANCTION ORDER
 
 Permit Application No.: ${application.caseNumber}
 Project Address: ${application.projectAddress}
@@ -115,23 +115,23 @@ Date: September 12, 2026
 
 Dear ${application.applicantName.split(" ")[0]},
 
-Your ${application.projectType} application has been reviewed by department plans examiners and verified to be in full compliance with all applicable codes and regulations. No corrections are required.
+Your ${application.projectType} application has been scrutinized by department examiners and verified to be in full compliance with the National Building Code of India (NBC 2016) and Municipal Building Bye-Laws. No corrections are required.
 
-Following human plans examiner verification, your permit application is approved for issuance upon payment of applicable fees.
+Following human plans examiner verification, your building permit is approved for sanction issuance upon payment of applicable municipal fees.
 
 Sincerely,
-Building Official
-Maplewood Township Building Department`;
+Chief Building Official
+Department of Town Planning & Building Sanction`;
   }
 
   const itemsText = application.findings
     .map((f, i) => `ITEM ${i + 1} — ${f.issue.toUpperCase()}\n${f.detail}`)
     .join("\n\n");
 
-  return `MAPLEWOOD TOWNSHIP BUILDING DEPARTMENT
-Office of Plan Review and Inspection
+  return `MUNICIPAL CORPORATION TOWN PLANNING & BUILDING SANCTION DEPARTMENT
+Office of Plan Scrutiny & Building Sanction
 
-NOTICE OF PLAN REVIEW CORRECTION
+NOTICE OF PLAN SCRUTINY CORRECTION
 
 Permit Application No.: ${application.caseNumber}
 Project Address: ${application.projectAddress}
@@ -140,13 +140,13 @@ Date of Notice: September 12, 2026
 
 Dear ${application.applicantName.split(" ")[0]},
 
-Your ${application.projectType} application has been reviewed. The following corrections are required:
+Your ${application.projectType} application has been scrutinized under NBC 2016. The following corrections are required:
 
 ${itemsText}
 
-Please resubmit revised plans addressing all items above within 30 days of this notice.
+Please resubmit revised drawings addressing all items above within 30 days of this notice.
 
 Sincerely,
-Plan Reviewer
-Maplewood Township Building Department`;
+Plan Scrutiny Examiner
+Department of Town Planning & Building Sanction`;
 }

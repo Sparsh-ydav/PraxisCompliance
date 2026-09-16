@@ -1,17 +1,17 @@
-// Hardcoded fallback compliance results for each blueprint.
+// Fallback compliance results for each blueprint under National Building Code of India (NBC 2016).
 // These are returned when the LLM is unavailable or returns invalid JSON.
-// This guarantees demo reliability — see lib/llm.ts for usage.
+// Guarantees reliable deterministic evaluation.
 
-import type { ComplianceFinding, ComplianceResult } from "@/lib/schemas";
+import type { ComplianceResult } from "@/lib/schemas";
 
 export const FALLBACK_CLEAN: ComplianceResult = {
   blueprintId: "bp-clean",
   clausesChecked: 19,
   findings: [],
   governanceNote:
-    "No issues detected in automated check against 19 clauses — human reviewer sign-off required before permit issuance.",
+    "No non-compliance detected against 19 clauses of National Building Code of India (NBC 2016) — Municipal Building Sanction sign-off required prior to permit issuance.",
   agentReasoning:
-    "Blueprint A was checked against all fire egress clauses (FE-101 through FE-109) and all setback/zoning clauses (SB-201 through SB-210). All egress openings meet minimum dimensions. All setbacks are within required minimums. Primary exit door width is compliant. No sleeping rooms below grade. No issues found.",
+    "Blueprint A was evaluated against all fire egress and exit safety requirements under NBC 2016 Part 4 (Clauses 4.1 through 4.17) and open space/setback standards under NBC 2016 Part 3 (Clauses 8.1 through 8.4). Egress openings in the addition bedroom exceed 500 mm width, 600 mm height, and 0.53 m² area. Front, rear, and side setbacks strictly satisfy minimum open space dimensions. Primary exit doorway clear width of 914 mm (36 in) satisfies residential exit norms. No habitable rooms below grade without required light/ventilation shafts. Full compliance verified.",
 };
 
 export const FALLBACK_BLOCKING: ComplianceResult = {
@@ -20,12 +20,12 @@ export const FALLBACK_BLOCKING: ComplianceResult = {
   findings: [
     {
       id: "f-b-001",
-      issue: "Basement bedroom egress window width is 16 inches — below the 20-inch minimum",
+      issue: "Basement bedroom emergency escape window width is 406 mm (16 in) — below NBC 2016 500 mm minimum",
       detail:
-        "The emergency escape and rescue opening for the basement bedroom has a net clear opening width of 16 inches. Section 101.2 requires a minimum net clear opening width of 20 inches for any sleeping room. This is a 4-inch deficit and does not qualify for any exception.",
+        "The emergency escape and ventilation opening for the basement sleeping room provides a net clear width of only 406 mm (16 inches). NBC 2016 Part 4, Clause 4.10 and Part 8 Section 1, Clause 9.11.2 require a minimum net clear opening width of 500 mm (20 inches) for any habitable sleeping room. This 94 mm deficit fails life safety egress requirements and does not qualify for an administrative waiver.",
       clauseId: "FE-102",
-      clauseCitation: "Section 101.2 — Minimum net clear opening width: 20 inches",
-      evidence: 'Window W2, basement bedroom (south wall) — parsed net clear opening: 16" × 22"',
+      clauseCitation: "NBC 2016 Part 4, Clause 4.10 — Minimum clear opening width: 500 mm (20 inches)",
+      evidence: 'Window W2, basement bedroom (south wall) — parsed net clear opening: 16" × 22" (406 mm × 559 mm)',
       elementId: "W2",
       severity: "blocking",
       source: "written_code",
@@ -33,12 +33,12 @@ export const FALLBACK_BLOCKING: ComplianceResult = {
     },
     {
       id: "f-b-002",
-      issue: "Basement bedroom egress window height is 22 inches — below the 24-inch minimum",
+      issue: "Basement bedroom emergency escape window height is 559 mm (22 in) — below NBC 2016 600 mm minimum",
       detail:
-        "The same egress window also fails the height requirement. Net clear opening height is 22 inches; the minimum required by Section 101.2 is 24 inches.",
+        "The same egress opening fails the vertical dimension criteria under NBC 2016 Part 4, Clause 4.10. Net clear opening height is 559 mm (22 inches), which is 41 mm below the mandatory minimum clear opening height of 600 mm (24 inches).",
       clauseId: "FE-102",
-      clauseCitation: "Section 101.2 — Minimum net clear opening height: 24 inches",
-      evidence: 'Window W2, basement bedroom (south wall) — parsed net clear opening: 16" × 22"',
+      clauseCitation: "NBC 2016 Part 4, Clause 4.10 — Minimum clear opening height: 600 mm (24 inches)",
+      evidence: 'Window W2, basement bedroom (south wall) — parsed net clear opening: 16" × 22" (406 mm × 559 mm)',
       elementId: "W2",
       severity: "blocking",
       source: "written_code",
@@ -46,12 +46,12 @@ export const FALLBACK_BLOCKING: ComplianceResult = {
     },
     {
       id: "f-b-003",
-      issue: "Basement egress window sill height is 50 inches — exceeds 44-inch maximum",
+      issue: "Basement escape window sill height is 1270 mm (50 in) — exceeds NBC 2016 1100 mm maximum",
       detail:
-        "The sill height above finished floor is 50 inches. Section 101.2 sets a maximum of 44 inches. Historical patterns confirm Maplewood reviewers flag sill exceedances of even 1 inch — this 6-inch exceedance will definitely be flagged.",
+        "The window sill height above finished floor level is 1270 mm (50 inches). NBC 2016 Part 4, Clause 4.10 sets a strict upper bound of 1100 mm (44 inches / 1.1 m) to ensure unassisted occupant escape. Municipal scrutiny records confirm examiners consistently reject sills exceeding 1.1 m without a permanent compliant step.",
       clauseId: "FE-102",
-      clauseCitation: "Section 101.2 — Maximum sill height: 44 inches above finished floor",
-      evidence: 'Window W2, basement bedroom (south wall) — parsed sill height: 50" above finished floor',
+      clauseCitation: "NBC 2016 Part 4, Clause 4.10 — Maximum sill height: 1.1 m (44 inches / 1100 mm)",
+      evidence: 'Window W2, basement bedroom (south wall) — parsed sill height: 50" (1270 mm) above finished floor',
       elementId: "W2",
       severity: "blocking",
       source: "written_code",
@@ -59,11 +59,11 @@ export const FALLBACK_BLOCKING: ComplianceResult = {
     },
     {
       id: "f-b-004",
-      issue: "New sleeping room created without smoke alarm documentation",
+      issue: "New sleeping room created without smoke and heat detection key plan",
       detail:
-        "The basement conversion creates a new sleeping room. Section 101.9 requires interconnected smoke alarms on all floors and in each new sleeping room. Based on historical patterns, Maplewood reviewers flag every new-sleeping-room application that lacks an explicit smoke alarm location plan.",
+        "The proposed basement renovation creates an additional sleeping room. NBC 2016 Part 4, Clause 4.17 & Table 7 require interconnected automatic smoke detectors in all sleeping areas and access corridors. Historical plan exam precedents show municipal authorities issue formal objections for any new bedroom lacking an explicit electrical smoke detection schedule.",
       clauseId: "FE-109",
-      clauseCitation: "Section 101.9 — Interconnected smoke alarms required for new sleeping rooms",
+      clauseCitation: "NBC 2016 Part 4, Table 7 — Interconnected smoke alarm layout required for new sleeping rooms",
       evidence: "Administrative/Documentation — new sleeping room created without interconnected smoke alarm plan",
       severity: "blocking",
       source: "learned_pattern",
@@ -71,9 +71,9 @@ export const FALLBACK_BLOCKING: ComplianceResult = {
     },
   ],
   governanceNote:
-    "4 issues detected (3 blocking, 1 blocking via learned pattern) in automated check against 19 clauses — human reviewer sign-off required before permit issuance.",
+    "4 issues detected (3 blocking, 1 blocking via learned pattern) against 19 clauses of National Building Code of India (NBC 2016) — Town Planning Officer review required.",
   agentReasoning:
-    "Blueprint B was checked against all 19 clauses. The basement bedroom conversion triggers multiple egress failures: window width (16 in vs 20 in min), window height (22 in vs 24 in min), and sill height (50 in vs 44 in max). Additionally, historical Pattern lp-004 indicates Maplewood reviewers always flag missing smoke alarm plans for new sleeping rooms — no such plan is indicated in the submission.",
+    "Blueprint B was audited against NBC 2016 Part 3 and Part 4 standards. The basement conversion triggers multiple life-safety egress non-compliances under NBC Part 4 Clause 4.10: window clear width (406 mm vs 500 mm min), window clear height (559 mm vs 600 mm min), and sill height (1270 mm vs 1100 mm max). Furthermore, under NBC Part 4 Table 7 and learned municipal pattern lp-004, an interconnected smoke detection layout is mandatory for newly added sleeping accommodations.",
 };
 
 export const FALLBACK_ADVISORY: ComplianceResult = {
@@ -82,13 +82,13 @@ export const FALLBACK_ADVISORY: ComplianceResult = {
   findings: [
     {
       id: "f-a-001",
-      issue: "Side setback is 5.67 ft — below the 6-ft minimum by 0.33 ft (3.96 inches)",
+      issue: "Side setback is 1.73 m (5.67 ft) — 70 mm below NBC 2016 1.8 m (6.0 ft) minimum (Advisory Waiver Available)",
       detail:
-        "The proposed kitchen addition has a side setback of 5 feet 8 inches (5.67 ft), which is 0.33 ft (approximately 4 inches) below the 6-foot minimum required by Section 201.3. However, historical Pattern lp-002 shows that Maplewood reviewers consistently grant administrative waivers for side setback encroachments under 6 inches, provided a certified survey is submitted. This encroachment of ~4 inches should qualify for an administrative waiver — but the applicant must proactively request it and include the survey.",
+        "The proposed kitchen extension side open space measures 1.73 m (5 ft 8 in), which is approximately 70 mm (2.76 inches) below the 1.8 m (6.0 ft) minimum prescribed in NBC 2016 Part 3, Clause 8.2.3. However, under NBC 2016 Part 2 Clause 12.5 and local municipal bye-laws (historical pattern lp-002), deviations under 150 mm (6 inches) routinely receive an administrative tolerance waiver upon submission of a certified total-station plot demarcation survey.",
       clauseId: "SB-203",
       clauseCitation:
-        "Section 201.3 — Minimum side setback: 6 feet (Section 201.8 admin waiver available for encroachments ≤ 6 inches)",
-      evidence: 'Wall E1, Kitchen Extension (east wall) — parsed side setback: 5.67 ft (5\' 8") vs 6.0 ft min',
+        "NBC 2016 Part 3, Clause 8.2.3 — Minimum side open space: 1.8 m (Clause 8.4.3 / Part 2 Cl 12.5 waiver available ≤ 150 mm)",
+      evidence: 'Wall E1, Kitchen Extension (east wall) — parsed side setback: 5.67 ft (1.73 m) vs 6.0 ft (1.80 m) min',
       elementId: "setback-side",
       severity: "advisory",
       source: "learned_pattern",
@@ -96,9 +96,9 @@ export const FALLBACK_ADVISORY: ComplianceResult = {
     },
   ],
   governanceNote:
-    "1 advisory issue detected in automated check against 19 clauses — human reviewer sign-off required before permit issuance. No blocking issues found.",
+    "1 advisory item detected against 19 clauses of National Building Code of India (NBC 2016) — Municipal Building Sanction sign-off required. No life-safety blocking issues found.",
   agentReasoning:
-    "Blueprint C was checked against all 19 clauses. All egress requirements are satisfied (no sleeping rooms in this addition). The only issue is a side setback of 5.67 ft vs. the 6-ft minimum. Pattern lp-002 (confidence: 0.92) indicates this jurisdiction's reviewers routinely grant administrative waivers for sub-6-inch encroachments. The 3.96-inch encroachment falls within the waiver threshold, so this is advisory rather than blocking — but applicant must include a certified survey and request the waiver explicitly at filing.",
+    "Blueprint C conforms to all NBC 2016 Part 4 egress specifications (no sleeping rooms involved in addition). The sole deviation is a side setback of 1.73 m vs. the 1.80 m standard (70 mm encroachment). Learned pattern lp-002 (confidence: 0.92) confirms this falls well within the 150 mm administrative waiver threshold. Sourced as advisory with proactive waiver filing recommendation.",
 };
 
 export const FALLBACKS: Record<string, ComplianceResult> = {

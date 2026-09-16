@@ -391,7 +391,7 @@ function AppContent() {
               Applicant Compliance Pre-Check
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-              Upload an architectural blueprint to verify compliance against Maplewood Township building and zoning codes before permit submission.
+              Upload an architectural blueprint to verify compliance against the National Building Code of India (NBC 2016) and Municipal Building Bye-Laws before permit submission.
             </p>
 
             {/* File Upload Zone */}

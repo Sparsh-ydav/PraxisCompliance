@@ -32,8 +32,8 @@ const AUDIT_LOG_STORE: AuditEntry[] = [
     timestamp: new Date(Date.now() - 3600000).toISOString(),
     actionType: "compliance_check_run",
     actor: "System Pipeline",
-    targetId: "Maplewood-2026",
-    summary: "Loaded 19 municipal code clauses and 6 historical reviewer patterns for Maplewood Township.",
+    targetId: "NBC-2016",
+    summary: "Loaded 19 National Building Code of India (NBC 2016) clauses and 6 historical reviewer patterns for Municipal Town Planning Authority.",
   },
   {
     id: "audit-init-02",
@@ -41,7 +41,7 @@ const AUDIT_LOG_STORE: AuditEntry[] = [
     actionType: "compliance_check_run",
     actor: "System Pipeline",
     targetId: "bp-blocking",
-    summary: "Initial compliance check executed on Blueprint B: 4 findings identified (3 blocking, 1 advisory).",
+    summary: "Initial compliance check executed on Blueprint B: 4 NBC 2016 findings identified (3 blocking, 1 advisory).",
   },
 ];
 
