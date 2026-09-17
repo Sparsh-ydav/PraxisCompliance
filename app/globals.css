@@ -3,25 +3,30 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8fafc;
-  --foreground: #1e293b;
-  --card: #ffffff;
-  --card-border: #e2e8f0;
+  --background: #f7f4eb;
+  --foreground: #24211d;
+  --card: #fcfaf6;
+  --card-border: #e6dfd1;
   --blocking: #dc2626;
-  --blocking-bg: #fee2e2;
-  --blocking-border: #fecaca;
+  --blocking-bg: #fdf1f0;
+  --blocking-border: #f9cdca;
   --advisory: #d97706;
-  --advisory-bg: #fef3c7;
-  --advisory-border: #fde68a;
+  --advisory-bg: #fef7ea;
+  --advisory-border: #fde0b6;
   --success: #059669;
-  --success-bg: #d1fae5;
-  --accent: #2563eb;
-  --accent-light: #dbeafe;
-  --muted: #64748b;
-  --municipal-blue: #1e3a5f;
-  --paper-white: #f8fafc;
-  --signature-ink: #2563eb;
-  --slate-text: #334155;
+  --success-bg: #ebf7f3;
+  --accent: #1d4ed8;
+  --accent-light: #eef2ff;
+  --muted: #6d665c;
+  --municipal-blue: #162b44;
+  --paper-white: #f7f4eb;
+  --signature-ink: #1d4ed8;
+  --slate-text: #38332c;
+  --beige-50: #faf8f4;
+  --beige-100: #f4efe6;
+  --beige-200: #eae2d3;
+  --beige-300: #ddd4c2;
+  --beige-muted: #82786b;
 }
 
 .dark {
@@ -44,6 +49,11 @@
   --paper-white: #0f172a;
   --signature-ink: #60a5fa;
   --slate-text: #cbd5e1;
+  --beige-50: #1e293b;
+  --beige-100: #1e293b;
+  --beige-200: #334155;
+  --beige-300: #475569;
+  --beige-muted: #94a3b8;
 }
 
 @theme inline {
@@ -66,6 +76,11 @@
   --color-paper-white: var(--paper-white);
   --color-signature-ink: var(--signature-ink);
   --color-slate-text: var(--slate-text);
+  --color-beige-50: var(--beige-50);
+  --color-beige-100: var(--beige-100);
+  --color-beige-200: var(--beige-200);
+  --color-beige-300: var(--beige-300);
+  --color-beige-muted: var(--beige-muted);
   --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
 }

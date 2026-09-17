@@ -38,11 +38,11 @@ export default function ApprovalReadinessGauge({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 transition-colors">
+    <div className="bg-card dark:bg-slate-900 p-5 rounded-xl border border-card-border dark:border-slate-800 shadow-xs mb-6 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            <h3 className="text-base font-bold text-foreground dark:text-slate-100 tracking-tight">
               Approval Readiness Score
             </h3>
             <span

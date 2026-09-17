@@ -84,12 +84,12 @@ export default function ReviewerDashboard() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">Reviewer Dashboard</h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-municipal-blue dark:text-slate-100">Reviewer Dashboard</h1>
+          <p className="text-xs md:text-sm text-muted dark:text-slate-400 mt-1">
             Municipal Corporation — Department of Town Planning &amp; Building Sanction (NBC 2016)
           </p>
         </div>
-        <div className="text-xs bg-slate-100 dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="text-xs bg-card dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-card-border dark:border-slate-800 shadow-xs">
           <span className="font-semibold text-slate-700 dark:text-slate-300">Session Actions:</span>{" "}
           <span className="text-emerald-700 dark:text-emerald-400 font-bold">{approvedAsIs}</span> approved as-is,{" "}
           <span className="text-blue-700 dark:text-blue-400 font-bold">{editedBeforeApproval}</span> edited &amp; approved,{" "}
@@ -162,7 +162,7 @@ export default function ReviewerDashboard() {
                   <div
                     key={app.id}
                     onClick={() => loadApplication(app)}
-                    className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs hover:shadow-md cursor-pointer transition-all hover:border-blue-300 dark:hover:border-slate-700"
+                    className="bg-card dark:bg-slate-900 p-4 border border-card-border dark:border-slate-800 rounded-xl shadow-xs hover:shadow-md cursor-pointer transition-all hover:border-signature-ink dark:hover:border-slate-700"
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -205,8 +205,8 @@ export default function ReviewerDashboard() {
                 ← Back to Queue
               </button>
 
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 transition-colors">
-                <h2 className="text-2xl font-bold mb-1 text-slate-900 dark:text-slate-100">{selectedApp.applicantName}</h2>
+              <div className="bg-card dark:bg-slate-900 p-6 rounded-xl border border-card-border dark:border-slate-800 shadow-xs mb-6 transition-colors">
+                <h2 className="text-2xl font-bold mb-1 text-municipal-blue dark:text-slate-100">{selectedApp.applicantName}</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-4 font-mono">
                   {selectedApp.projectAddress} • Case #{selectedApp.caseNumber}
                 </p>

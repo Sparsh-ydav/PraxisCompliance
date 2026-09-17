@@ -13,6 +13,7 @@ import EvidenceChain from "@/app/components/EvidenceChain";
 import JurisdictionMemoryPanel from "@/app/components/JurisdictionMemoryPanel";
 import RegulationConflictCard from "@/app/components/RegulationConflictCard";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Footer from "@/app/components/Footer";
 import { detectRegulationConflicts } from "@/lib/conflict-detector";
 import { logAuditEvent } from "@/lib/audit-trail";
 import { rippleEffectSource, type RippleEffectResult } from "@/lib/ripple-effect";
@@ -284,40 +285,41 @@ function AppContent() {
   const conflicts = detectRegulationConflicts(activeBlueprint || undefined);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      {/* Top Navigation */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-bold text-xl tracking-tight text-municipal-blue dark:text-blue-400 flex items-center gap-2">
-              <span className="w-4 h-4 bg-accent rounded-sm inline-block" />
-              PraxisCompliance
-            </Link>
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-200 flex flex-col justify-between">
+      <div>
+        {/* Top Navigation */}
+        <header className="bg-card/90 dark:bg-slate-900/90 border-b border-card-border dark:border-slate-800 sticky top-0 z-30 shadow-xs backdrop-blur-md">
+          <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <Link href="/" className="font-extrabold text-xl tracking-tight text-municipal-blue dark:text-blue-400 flex items-center gap-2">
+                <span className="w-4 h-4 bg-accent rounded-sm inline-block shadow-xs" />
+                PraxisCompliance
+              </Link>
 
-            <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-              <button
-                onClick={() => handleTabChange("applicant")}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === "applicant"
-                    ? "bg-white dark:bg-slate-700 text-municipal-blue dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
-              >
-                Applicant Check
-              </button>
-              <button
-                onClick={() => handleTabChange("reviewer")}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === "reviewer"
-                    ? "bg-white dark:bg-slate-700 text-municipal-blue dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
-              >
-                <span>Reviewer Dashboard</span>
-                {!isLoggedIn && <span className="text-[10px] opacity-60">🔒</span>}
-              </button>
-            </nav>
-          </div>
+              <nav className="flex items-center gap-1 bg-beige-100 dark:bg-slate-800 p-1 rounded-lg border border-card-border dark:border-slate-700">
+                <button
+                  onClick={() => handleTabChange("applicant")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === "applicant"
+                      ? "bg-card dark:bg-slate-700 text-municipal-blue dark:text-white shadow-xs"
+                      : "text-muted dark:text-slate-400 hover:text-foreground dark:hover:text-slate-200"
+                  }`}
+                >
+                  Applicant Check
+                </button>
+                <button
+                  onClick={() => handleTabChange("reviewer")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === "reviewer"
+                      ? "bg-card dark:bg-slate-700 text-municipal-blue dark:text-white shadow-xs"
+                      : "text-muted dark:text-slate-400 hover:text-foreground dark:hover:text-slate-200"
+                  }`}
+                >
+                  <span>Reviewer Dashboard</span>
+                  {!isLoggedIn && <span className="text-[10px] opacity-60">🔒</span>}
+                </button>
+              </nav>
+            </div>
 
           <div className="flex items-center gap-3">
             {/* Dark / Light Mode Switch */}
@@ -386,16 +388,16 @@ function AppContent() {
       {/* Main Tab Routing */}
       {activeTab === "applicant" ? (
         <div className="p-4 md:p-8 max-w-6xl mx-auto">
-          <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 transition-colors">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+          <section className="bg-card dark:bg-slate-900 p-6 rounded-xl border border-card-border dark:border-slate-800 shadow-xs mb-6 transition-colors">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-municipal-blue dark:text-slate-100 mb-1">
               Applicant Compliance Pre-Check
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+            <p className="text-sm text-muted dark:text-slate-400 mb-6">
               Upload an architectural blueprint to verify compliance against the National Building Code of India (NBC 2016) and Municipal Building Bye-Laws before permit submission.
             </p>
 
             {/* File Upload Zone */}
-            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-colors bg-slate-50/50 dark:bg-slate-850/40">
+            <div className="border-2 border-dashed border-card-border dark:border-slate-700 rounded-xl p-6 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-colors bg-beige-50/50 dark:bg-slate-850/40">
               <input
                 type="file"
                 accept=".pdf,image/png,image/jpeg,image/webp"
@@ -405,18 +407,18 @@ function AppContent() {
               />
               <label htmlFor="blueprint-upload" className="cursor-pointer block">
                 <div className="text-3xl mb-2">📁</div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                <p className="text-sm font-semibold text-foreground dark:text-slate-200">
                   Click to upload blueprint (PDF, PNG, JPG)
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-muted dark:text-slate-400 mt-1">
                   Synthetic test files recognized: clean-addition.pdf, basement-bedroom.pdf, setback-kitchen.pdf
                 </p>
               </label>
 
               {uploadedFile && (
-                <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs inline-flex items-center gap-2 font-mono">
+                <div className="mt-4 p-3 bg-card dark:bg-slate-800 rounded-lg border border-card-border dark:border-slate-700 text-xs inline-flex items-center gap-2 font-mono">
                   <span>📄 {uploadedFile.name}</span>
-                  <span className="text-slate-400 dark:text-slate-500">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
+                  <span className="text-muted dark:text-slate-500">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
                 </div>
               )}
             </div>
@@ -662,19 +664,19 @@ function AppContent() {
         </div>
       ) : !isLoggedIn ? (
         <div className="p-8 max-w-lg mx-auto py-20">
-          <div className="bg-white dark:bg-slate-900 p-8 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 text-2xl">
+          <div className="bg-card dark:bg-slate-900 p-8 border border-card-border dark:border-slate-800 rounded-2xl shadow-sm text-center">
+            <div className="w-12 h-12 rounded-full bg-beige-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 text-2xl">
               🔒
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+            <h2 className="text-2xl font-bold text-municipal-blue dark:text-slate-100 mb-2">
               Reviewer Sign-In Required
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+            <p className="text-sm text-muted dark:text-slate-400 mb-6 leading-relaxed">
               The Reviewer Dashboard is restricted to municipal staff to manage application queues, inspect audit logs, and issue official correction letters.
             </p>
             <button
               onClick={() => router.push(`/login?redirect=${encodeURIComponent("/app?tab=reviewer")}`)}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors cursor-pointer shadow-sm"
+              className="w-full bg-signature-ink text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors cursor-pointer shadow-sm"
             >
               Sign In as Reviewer
             </button>
@@ -683,6 +685,8 @@ function AppContent() {
       ) : (
         <ReviewerDashboard />
       )}
+      </div>
+      <Footer />
     </div>
   );
 }
